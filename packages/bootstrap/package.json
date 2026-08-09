@@ -1,7 +1,7 @@
 {
-  "name": "@mystic/config",
+  "name": "@mystic/bootstrap",
   "version": "1.0.0",
-  "description": "Mystic Platform Configuration Package",
+  "description": "Mystic Platform Bootstrap",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -10,11 +10,13 @@
   ],
   "scripts": {
     "build": "tsc",
-    "dev": "tsx watch src/index.ts"
+    "clean": "rm -rf dist",
+    "dev": "tsx watch src/index.ts",
+    "typecheck": "tsc --noEmit"
   },
   "license": "MIT",
   "dependencies": {
-    "zod": "^4.4.3"
+    "dotenv": "^17.4.2"
   },
   "devDependencies": {
     "@types/node": "^26.2.0"

@@ -1,8 +1,10 @@
-import Fastify from "fastify";
+import Fastify, { type FastifyInstance } from "fastify";
 
 import { registerHealthRoute } from "./health.js";
 
-export async function createServer() {
+export type MysticServer = FastifyInstance;
+
+export async function createServer(): Promise<MysticServer> {
   const app = Fastify({
     logger: true,
   });

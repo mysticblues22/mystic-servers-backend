@@ -1,7 +1,7 @@
 {
-  "name": "@mystic/config",
+  "name": "@mystic/__PACKAGE_NAME__",
   "version": "1.0.0",
-  "description": "Mystic Platform Configuration Package",
+  "description": "Mystic Platform __PACKAGE_TITLE__",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -10,12 +10,12 @@
   ],
   "scripts": {
     "build": "tsc",
-    "dev": "tsx watch src/index.ts"
+    "clean": "rm -rf dist",
+    "dev": "tsx watch src/index.ts",
+    "typecheck": "tsc --noEmit"
   },
   "license": "MIT",
-  "dependencies": {
-    "zod": "^4.4.3"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/node": "^26.2.0"
   }

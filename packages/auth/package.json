@@ -1,7 +1,7 @@
 {
-  "name": "@mystic/config",
+  "name": "@mystic/auth",
   "version": "1.0.0",
-  "description": "Mystic Platform Configuration Package",
+  "description": "Mystic Platform Authentication",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -10,11 +10,15 @@
   ],
   "scripts": {
     "build": "tsc",
-    "dev": "tsx watch src/index.ts"
+    "clean": "rm -rf dist",
+    "dev": "tsx watch src/index.ts",
+    "typecheck": "tsc --noEmit"
   },
   "license": "MIT",
   "dependencies": {
-    "zod": "^4.4.3"
+    "@mystic/config": "workspace:*",
+    "argon2": "^0.45.1",
+    "jose": "^6.2.8"
   },
   "devDependencies": {
     "@types/node": "^26.2.0"
