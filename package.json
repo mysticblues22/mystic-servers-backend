@@ -1,22 +1,15 @@
 {
   "name": "backend",
+  "private": true,
   "version": "1.0.0",
   "description": "Mystic Platform Backend",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "Mystic",
   "license": "MIT",
-  "devEngines": {
-    "packageManager": {
-      "name": "pnpm",
-      "version": "^11.21.0",
-      "onFail": "download"
-    }
+  "packageManager": "pnpm@11.21.0",
+  "scripts": {
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "clean": "pnpm -r clean"
   },
-  "type": "module",
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^26.2.0",

@@ -1,0 +1,26 @@
+{
+  "name": "@mystic/core",
+  "version": "1.0.0",
+  "description": "Mystic Platform Core",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "dev": "tsx watch src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@mystic/config": "workspace:*",
+    "@mystic/logger": "workspace:*",
+    "fastify": "^5.11.3"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0"
+  }
+}
