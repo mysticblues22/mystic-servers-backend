@@ -3,12 +3,16 @@
   "private": true,
   "version": "1.0.0",
   "description": "Mystic Platform Backend",
-  "license": "MIT",
   "packageManager": "pnpm@11.21.0",
+  "type": "module",
+  "author": "Mystic",
+  "license": "MIT",
   "scripts": {
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
-    "clean": "pnpm -r clean"
+    "clean": "find . -name dist -type d -exec rm -rf {} +",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
