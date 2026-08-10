@@ -5,7 +5,7 @@ export interface AccessTokenPayload extends JWTPayload {
 
   email: string;
 
-  role: string;
+  role: "admin" | "user";
 }
 
 export interface RefreshTokenPayload extends JWTPayload {

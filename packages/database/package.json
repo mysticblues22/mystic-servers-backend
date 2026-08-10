@@ -12,10 +12,14 @@
     "build": "tsc",
     "clean": "rm -rf dist",
     "dev": "tsx watch src/index.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "generate": "drizzle-kit generate",
+    "migrate": "drizzle-kit migrate",
+    "push": "drizzle-kit push"
   },
   "license": "MIT",
   "dependencies": {
+    "@mystic/bootstrap": "workspace:*",
     "@mystic/config": "workspace:*",
     "drizzle-orm": "^0.45.2",
     "pg": "^8.22.0"

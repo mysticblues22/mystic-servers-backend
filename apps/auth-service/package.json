@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf dist",
@@ -11,15 +10,16 @@
     "start": "node dist/main.js",
     "typecheck": "tsc --noEmit"
   },
-
   "dependencies": {
+    "@mystic/auth": "workspace:*",
     "@mystic/bootstrap": "workspace:*",
     "@mystic/config": "workspace:*",
     "@mystic/core": "workspace:*",
     "@mystic/database": "workspace:*",
-    "@mystic/logger": "workspace:*"
+    "@mystic/logger": "workspace:*",
+    "fastify": "^5.11.3",
+    "zod": "^4.4.3"
   },
-
   "devDependencies": {
     "@types/node": "^26.2.0"
   }

@@ -1,17 +1,29 @@
 import { defineConfig } from "drizzle-kit";
 
+import { loadConfig } from "@mystic/config";
+import { bootstrap } from "@mystic/bootstrap";
+
+bootstrap({
+  envFile: "../../../infrastructure/env/backend.env",
+});
+
+const config = loadConfig();
+
 export default defineConfig({
-  schema: "./src/schema/*",
+  dialect: "postgresql",
+
+  schema: "./src/schema",
 
   out: "./src/migrations",
 
-  dialect: "postgresql",
-
   dbCredentials: {
-    url: process.env.DATABASE_URL!,
+    host: config.database.host,
+    port: config.database.port,
+    user: config.database.user,
+    password: config.database.password,
+    database: config.database.name,
   },
 
   verbose: true,
-
   strict: true,
 });
