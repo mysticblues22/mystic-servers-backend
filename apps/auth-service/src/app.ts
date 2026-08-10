@@ -1,16 +1,75 @@
+import fastifyCookie from "@fastify/cookie";
+import fastifyCors from "@fastify/cors";
+import fastifyRateLimit from "@fastify/rate-limit";
+import { loadConfig } from "@mystic/config";
 import { createServer } from "@mystic/core";
+import type { FastifyReply, FastifyRequest } from "fastify";
+import { ZodError } from "zod";
 
 import { registerAuthRoutes } from "./routes/auth.js";
+import { registerForgotPasswordRoute } from "./routes/forgot-password.js";
 import { registerLoginRoutes } from "./routes/login.js";
 import { registerLogoutRoutes } from "./routes/logout.js";
-import { registerRefreshRoutes } from "./routes/refresh.js";
 import { registerMeRoutes } from "./routes/me.js";
-import { registerVerifyEmailRoutes } from "./routes/verify-email.js";
-import { registerForgotPasswordRoute } from "./routes/forgot-password.js";
+import { registerRefreshRoutes } from "./routes/refresh.js";
 import { registerResetPasswordRoute } from "./routes/reset-password.js";
+import { registerVerifyEmailRoutes } from "./routes/verify-email.js";
+
+const config = loadConfig();
 
 export async function buildApp() {
   const app = await createServer();
+
+  // Register CORS
+  await app.register(fastifyCors, {
+    origin: process.env.CORS_ORIGIN || "http://localhost:3000",
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Request-ID"],
+  });
+
+  // Register Cookie plugin
+  await app.register(fastifyCookie, {
+    secret: config.jwt.secret,
+  });
+
+  // Register Rate Limiter
+  await app.register(fastifyRateLimit, {
+    max: 100,
+    timeWindow: "1 minute",
+    errorResponseBuilder: (request: FastifyRequest, context: { max: number; after: string }) => ({
+      error: {
+        code: "RATE_LIMIT_EXCEEDED",
+        message: `Too many requests. Limit is ${context.max} requests per ${context.after}. Please try again later.`,
+      },
+    }),
+  });
+
+  // Centralized Sanitized Error Handler
+  app.setErrorHandler((error: Error & { statusCode?: number }, request: FastifyRequest, reply: FastifyReply) => {
+    request.log.error(error);
+
+    if (error instanceof ZodError) {
+      return reply.status(400).send({
+        error: {
+          code: "VALIDATION_ERROR",
+          message: error.issues[0]?.message || "Invalid request parameters",
+        },
+      });
+    }
+
+    const statusCode = error.statusCode || 500;
+    const isDomainError = statusCode < 500;
+
+    return reply.status(statusCode).send({
+      error: {
+        code: isDomainError ? "BAD_REQUEST" : "INTERNAL_ERROR",
+        message: isDomainError
+          ? error.message
+          : "An unexpected error occurred. Please try again later.",
+      },
+    });
+  });
 
   await registerAuthRoutes(app);
   await registerLoginRoutes(app);

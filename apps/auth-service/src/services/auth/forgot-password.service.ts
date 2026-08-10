@@ -1,24 +1,23 @@
 import crypto from "node:crypto";
-
 import {
   passwordResetRepository,
   userRepository,
 } from "@mystic/database";
-
 import { ForgotPasswordInput } from "../../schemas/auth.schema.js";
 
 export async function forgotPasswordService(
   input: ForgotPasswordInput,
 ) {
-  const user = await userRepository.findByEmail(
-    input.email,
-  );
+  const user = await userRepository.findByEmail(input.email);
 
-  // Always return success to avoid user enumeration
+  // Always return identical generic success message to prevent user enumeration attacks
+  const genericResponse = {
+    success: true,
+    message: "If an account matching that email address exists, password recovery instructions will be provided.",
+  };
+
   if (!user) {
-    return {
-      success: true,
-    };
+    return genericResponse;
   }
 
   const token = crypto.randomUUID();
@@ -28,20 +27,13 @@ export async function forgotPasswordService(
     .update(token)
     .digest("hex");
 
-  await passwordResetRepository.deleteByUser(
-    user.id,
-  );
+  await passwordResetRepository.deleteByUser(user.id);
 
   await passwordResetRepository.create({
     userId: user.id,
     tokenHash,
-    expiresAt: new Date(
-      Date.now() + 1000 * 60 * 60,
-    ),
+    expiresAt: new Date(Date.now() + 1000 * 60 * 60),
   });
 
-  return {
-    success: true,
-    token,
-  };
+  return genericResponse;
 }

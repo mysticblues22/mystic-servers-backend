@@ -1,5 +1,4 @@
-import { FastifyReply, FastifyRequest } from "fastify";
-
+import type { FastifyReply, FastifyRequest } from "fastify";
 import { registerSchema } from "../schemas/auth.schema.js";
 import { registerService } from "../services/auth/register.service.js";
 
@@ -7,17 +6,17 @@ export async function registerController(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  try {
-    const body = registerSchema.parse(request.body);
+  const body = registerSchema.parse(request.body);
 
-    const result = await registerService(body);
+  const { refreshToken, ...responsePayload } = await registerService(body);
 
-    return reply.code(201).send(result);
-  } catch (error) {
-  console.error(error);
+  reply.setCookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/auth",
+    maxAge: 7 * 24 * 60 * 60,
+  });
 
-  return reply.code(500).send({
-    message: String(error),
-    });
-  }
+  return reply.code(201).send(responsePayload);
 }

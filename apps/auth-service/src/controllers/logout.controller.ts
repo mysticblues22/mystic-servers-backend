@@ -1,30 +1,26 @@
-import type {
-  FastifyReply,
-  FastifyRequest,
-} from "fastify";
-
-import {
-  logoutService,
-} from "../services/auth/logout.service.js";
+import type { FastifyReply, FastifyRequest } from "fastify";
+import { logoutService } from "../services/auth/logout.service.js";
 
 export async function logoutController(
-  request: FastifyRequest<{
-    Body: {
-      refreshToken: string;
-    };
-  }>,
+  request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  try {
-    const result =
-      await logoutService(
-        request.body.refreshToken,
-      );
+  const refreshToken = request.cookies.refreshToken;
 
-    return reply.send(result);
-  } catch (error) {
-    return reply.status(401).send({
-      message: String(error),
-    });
+  if (refreshToken) {
+    try {
+      await logoutService(refreshToken);
+    } catch (err) {
+      request.log.warn({ err }, "Error revoking refresh token session on logout");
+    }
   }
+
+  reply.clearCookie("refreshToken", {
+    path: "/auth",
+  });
+
+  return reply.send({
+    success: true,
+    message: "Logged out successfully",
+  });
 }

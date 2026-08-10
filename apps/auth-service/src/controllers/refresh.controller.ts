@@ -1,30 +1,31 @@
-import type {
-  FastifyReply,
-  FastifyRequest,
-} from "fastify";
-
-import {
-  refreshService,
-} from "../services/auth/refresh.service.js";
+import type { FastifyReply, FastifyRequest } from "fastify";
+import { refreshService } from "../services/auth/refresh.service.js";
 
 export async function refreshController(
-  request: FastifyRequest<{
-    Body: {
-      refreshToken: string;
-    };
-  }>,
+  request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  try {
-    const tokens =
-      await refreshService(
-        request.body.refreshToken,
-      );
+  const refreshToken = request.cookies.refreshToken;
 
-    return reply.send(tokens);
-  } catch (error) {
+  if (!refreshToken) {
     return reply.status(401).send({
-      message: String(error),
+      error: {
+        code: "UNAUTHORIZED",
+        message: "No refresh token cookie supplied",
+      },
     });
   }
+
+  const { accessToken, refreshToken: newRefreshToken } =
+    await refreshService(refreshToken);
+
+  reply.setCookie("refreshToken", newRefreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/auth",
+    maxAge: 7 * 24 * 60 * 60,
+  });
+
+  return reply.send({ accessToken });
 }
