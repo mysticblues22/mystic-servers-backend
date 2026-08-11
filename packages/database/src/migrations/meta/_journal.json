@@ -15,6 +15,13 @@
       "when": 1786341373850,
       "tag": "0001_graceful_the_leader",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1786440341758,
+      "tag": "0002_add_platform_foundation_tables",
+      "breakpoints": true
     }
   ]
 }
