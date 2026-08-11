@@ -1,9 +1,18 @@
 import { z } from "zod";
 
+export const passwordSchema = z
+  .string()
+  .min(8, "Password must be at least 8 characters long")
+  .max(128, "Password must be at most 128 characters long")
+  .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+  .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+  .regex(/[0-9]/, "Password must contain at least one number")
+  .regex(/[^A-Za-z0-9]/, "Password must contain at least one special character");
+
 export const registerSchema = z.object({
   email: z.email(),
   username: z.string().min(3).max(32),
-  password: z.string().min(8).max(128),
+  password: passwordSchema,
 });
 
 export type RegisterInput = z.infer<
@@ -24,10 +33,7 @@ export type ForgotPasswordInput =
 
 export const resetPasswordSchema = z.object({
   token: z.string(),
-
-  password: z
-    .string()
-    .min(8),
+  password: passwordSchema,
 });
 
 export type ResetPasswordInput =
