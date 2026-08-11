@@ -1,4 +1,4 @@
-import {
+import type {
   FastifyReply,
   FastifyRequest,
 } from "fastify";
@@ -6,6 +6,13 @@ import {
 import {
   verifyAccessToken,
 } from "@mystic/auth";
+
+const UNAUTHORIZED_RESPONSE = {
+  error: {
+    code: "UNAUTHORIZED",
+    message: "Invalid or missing access token",
+  },
+};
 
 export async function authMiddleware(
   request: FastifyRequest,
@@ -18,9 +25,7 @@ export async function authMiddleware(
     !header ||
     !header.startsWith("Bearer ")
   ) {
-    return reply.status(401).send({
-      message: "Unauthorized",
-    });
+    return reply.status(401).send(UNAUTHORIZED_RESPONSE);
   }
 
   const token = header.substring(7);
@@ -35,8 +40,6 @@ export async function authMiddleware(
       role: payload.role,
     };
   } catch {
-    return reply.status(401).send({
-      message: "Invalid access token",
-    });
+    return reply.status(401).send(UNAUTHORIZED_RESPONSE);
   }
 }
