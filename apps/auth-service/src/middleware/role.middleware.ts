@@ -12,7 +12,10 @@ export function requireRole(
   ) => {
     if (!request.user) {
       return reply.status(401).send({
-        message: "Unauthorized",
+        error: {
+          code: "UNAUTHORIZED",
+          message: "Unauthorized",
+        },
       });
     }
 
@@ -22,7 +25,10 @@ export function requireRole(
       )
     ) {
       return reply.status(403).send({
-        message: "Forbidden",
+        error: {
+          code: "FORBIDDEN",
+          message: "Forbidden",
+        },
       });
     }
   };

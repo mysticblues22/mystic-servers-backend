@@ -13,7 +13,10 @@ export async function meController(
 ) {
   if (!request.user) {
     return reply.status(401).send({
-      message: "Unauthorized",
+      error: {
+        code: "UNAUTHORIZED",
+        message: "Unauthorized",
+      },
     });
   }
 
@@ -24,7 +27,10 @@ export async function meController(
 
   if (!user) {
     return reply.status(404).send({
-      message: "User not found",
+      error: {
+        code: "USER_NOT_FOUND",
+        message: "User not found",
+      },
     });
   }
 
