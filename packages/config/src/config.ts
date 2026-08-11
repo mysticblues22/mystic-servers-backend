@@ -18,6 +18,9 @@ export function loadConfig() {
   const redisUrl =
     `redis://${env.REDIS_HOST}:${env.REDIS_PORT}`;
 
+  const cookieSecure =
+    env.AUTH_COOKIE_SECURE ?? (env.NODE_ENV === "production");
+
   return {
     app: {
       name: env.APP_NAME,
@@ -52,6 +55,10 @@ export function loadConfig() {
       refreshSecret: env.JWT_REFRESH_SECRET,
       accessExpiresIn: env.JWT_ACCESS_EXPIRES_IN,
       refreshExpiresIn: env.JWT_REFRESH_EXPIRES_IN,
+    },
+
+    cookie: {
+      secure: cookieSecure,
     },
   } as const;
 }

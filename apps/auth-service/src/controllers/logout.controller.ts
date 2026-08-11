@@ -1,11 +1,12 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { logoutService } from "../services/auth/logout.service.js";
+import { REFRESH_TOKEN_COOKIE_NAME } from "../utils/cookie.js";
 
 export async function logoutController(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  const refreshToken = request.cookies.refreshToken;
+  const refreshToken = request.cookies[REFRESH_TOKEN_COOKIE_NAME];
 
   if (refreshToken) {
     try {
@@ -15,7 +16,7 @@ export async function logoutController(
     }
   }
 
-  reply.clearCookie("refreshToken", {
+  reply.clearCookie(REFRESH_TOKEN_COOKIE_NAME, {
     path: "/auth",
   });
 

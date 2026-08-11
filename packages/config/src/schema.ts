@@ -44,6 +44,16 @@ export const envSchema = z.object({
   JWT_REFRESH_EXPIRES_IN: z
     .string()
     .default("30d"),
+
+  AUTH_COOKIE_SECURE: z
+    .string()
+    .optional()
+    .transform((val) => {
+      if (val === undefined || val === "") return undefined;
+      if (val === "true") return true;
+      if (val === "false") return false;
+      return undefined;
+    }),
 });
 
 export type Env = z.infer<typeof envSchema>;

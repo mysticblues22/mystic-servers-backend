@@ -1,11 +1,12 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { refreshService } from "../services/auth/refresh.service.js";
+import { REFRESH_TOKEN_COOKIE_NAME, getRefreshTokenCookieOptions } from "../utils/cookie.js";
 
 export async function refreshController(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  const refreshToken = request.cookies.refreshToken;
+  const refreshToken = request.cookies[REFRESH_TOKEN_COOKIE_NAME];
 
   if (!refreshToken) {
     return reply.status(401).send({
@@ -19,13 +20,11 @@ export async function refreshController(
   const { accessToken, refreshToken: newRefreshToken } =
     await refreshService(refreshToken);
 
-  reply.setCookie("refreshToken", newRefreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/auth",
-    maxAge: 7 * 24 * 60 * 60,
-  });
+  reply.setCookie(
+    REFRESH_TOKEN_COOKIE_NAME,
+    newRefreshToken,
+    getRefreshTokenCookieOptions(),
+  );
 
   return reply.send({ accessToken });
 }
