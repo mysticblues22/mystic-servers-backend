@@ -11,6 +11,7 @@ import { registerForgotPasswordRoute } from "./routes/forgot-password.js";
 import { registerLoginRoutes } from "./routes/login.js";
 import { registerLogoutRoutes } from "./routes/logout.js";
 import { registerMeRoutes } from "./routes/me.js";
+import { registerPlanRoutes } from "./routes/plans.js";
 import { registerRefreshRoutes } from "./routes/refresh.js";
 import { registerResetPasswordRoute } from "./routes/reset-password.js";
 import { registerVerifyEmailRoutes } from "./routes/verify-email.js";
@@ -79,6 +80,7 @@ export async function buildApp() {
   await registerVerifyEmailRoutes(app);
   await registerForgotPasswordRoute(app);
   await registerResetPasswordRoute(app);
+  await registerPlanRoutes(app);
 
   return app;
 }
