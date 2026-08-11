@@ -15,6 +15,7 @@
     "typecheck": "tsc",
     "generate": "drizzle-kit generate",
     "migrate": "drizzle-kit migrate",
+    "migrate:script": "tsx src/migrate.ts",
     "push": "drizzle-kit push"
   },
   "license": "MIT",
