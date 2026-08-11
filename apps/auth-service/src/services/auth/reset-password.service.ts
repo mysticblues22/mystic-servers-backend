@@ -36,6 +36,10 @@ export async function resetPasswordService(
     token.expiresAt.getTime() <
     Date.now()
   ) {
+    await passwordResetRepository.deleteByHash(
+      tokenHash,
+    );
+
     throw new HttpError(
       400,
       "INVALID_RESET_TOKEN",
