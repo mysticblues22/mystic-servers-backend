@@ -12,7 +12,7 @@
     "build": "tsc",
     "clean": "rm -rf dist",
     "dev": "tsx watch src/index.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc"
   },
   "license": "MIT",
   "dependencies": {

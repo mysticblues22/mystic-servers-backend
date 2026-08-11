@@ -1,5 +1,6 @@
 node_modules/
 dist/
+**/dist/
 coverage/
 
 .env
@@ -13,4 +14,3 @@ coverage/
 .idea/
 
 .DS_Store
-

@@ -10,7 +10,9 @@
   ],
   "scripts": {
     "build": "tsc",
-    "dev": "tsx watch src/index.ts"
+    "clean": "rm -rf dist",
+    "dev": "tsx watch src/index.ts",
+    "typecheck": "tsc"
   },
   "license": "MIT",
   "dependencies": {
