@@ -9,6 +9,7 @@ import {
   userRepository,
 } from "@mystic/database";
 
+import { HttpError } from "../../errors/http-error.js";
 import { RegisterInput } from "../../schemas/auth.schema.js";
 
 export async function registerService(
@@ -18,7 +19,11 @@ export async function registerService(
     await userRepository.findByEmail(input.email);
 
   if (emailExists) {
-    throw new Error("Email already exists");
+    throw new HttpError(
+      400,
+      "EMAIL_ALREADY_EXISTS",
+      "Email already exists",
+    );
   }
 
   const usernameExists =
@@ -27,7 +32,11 @@ export async function registerService(
     );
 
   if (usernameExists) {
-    throw new Error("Username already exists");
+    throw new HttpError(
+      400,
+      "USERNAME_ALREADY_EXISTS",
+      "Username already exists",
+    );
   }
 
   const passwordHash = await hashPassword(
