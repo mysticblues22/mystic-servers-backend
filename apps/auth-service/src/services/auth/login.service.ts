@@ -1,3 +1,4 @@
+import { UnauthorizedError } from "../../errors/http-error";
 import {
   createAccessToken,
   createRefreshToken,
@@ -34,8 +35,9 @@ export async function loginService(
     );
 
   if (!valid) {
-    throw new Error(
-      "Invalid email or password",
+    throw new UnauthorizedError(
+    "INVALID_CREDENTIALS",
+    "Invalid email or password",
     );
   }
 
