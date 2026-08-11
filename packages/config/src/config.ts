@@ -21,6 +21,9 @@ export function loadConfig() {
   const cookieSecure =
     env.AUTH_COOKIE_SECURE ?? (env.NODE_ENV === "production");
 
+  const corsOrigin =
+    env.CORS_ORIGIN || "http://localhost:3000";
+
   return {
     app: {
       name: env.APP_NAME,
@@ -28,6 +31,10 @@ export function loadConfig() {
       logLevel: env.LOG_LEVEL,
       host: env.API_HOST,
       port: env.API_PORT,
+    },
+
+    cors: {
+      origin: corsOrigin,
     },
 
     database: {

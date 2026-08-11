@@ -22,7 +22,7 @@ export async function buildApp() {
 
   // Register CORS
   await app.register(fastifyCors, {
-    origin: process.env.CORS_ORIGIN || "http://localhost:3000",
+    origin: config.cors.origin,
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Request-ID"],

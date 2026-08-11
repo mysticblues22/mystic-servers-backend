@@ -1,59 +1,73 @@
 import { z } from "zod";
 
-export const envSchema = z.object({
-  NODE_ENV: z.enum([
-    "development",
-    "production",
-    "test"
-  ]).default("development"),
+export const envSchema = z
+  .object({
+    NODE_ENV: z
+      .enum(["development", "production", "test"])
+      .default("development"),
 
-  APP_NAME: z.string(),
+    APP_NAME: z.string(),
 
-  LOG_LEVEL: z.string().default("info"),
+    LOG_LEVEL: z.string().default("info"),
 
-  API_HOST: z.string(),
+    API_HOST: z.string(),
 
-  API_PORT: z.coerce.number(),
+    API_PORT: z.coerce.number(),
 
-  DATABASE_HOST: z.string(),
+    CORS_ORIGIN: z.string().optional(),
 
-  DATABASE_PORT: z.coerce.number(),
+    DATABASE_HOST: z.string(),
 
-  DATABASE_NAME: z.string(),
+    DATABASE_PORT: z.coerce.number(),
 
-  DATABASE_USER: z.string(),
+    DATABASE_NAME: z.string(),
 
-  DATABASE_PASSWORD: z.string(),
+    DATABASE_USER: z.string(),
 
-  REDIS_HOST: z.string(),
+    DATABASE_PASSWORD: z.string(),
 
-  REDIS_PORT: z.coerce.number(),
+    REDIS_HOST: z.string(),
 
-  MINIO_ENDPOINT: z.string(),
+    REDIS_PORT: z.coerce.number(),
 
-  MINIO_PORT: z.coerce.number(),
+    MINIO_ENDPOINT: z.string(),
 
-  JWT_SECRET: z.string(),
+    MINIO_PORT: z.coerce.number(),
 
-  JWT_REFRESH_SECRET: z.string(),
+    JWT_SECRET: z
+      .string()
+      .min(32, "JWT_SECRET must be at least 32 characters"),
 
-  JWT_ACCESS_EXPIRES_IN: z
-    .string()
-    .default("15m"),
+    JWT_REFRESH_SECRET: z
+      .string()
+      .min(32, "JWT_REFRESH_SECRET must be at least 32 characters"),
 
-  JWT_REFRESH_EXPIRES_IN: z
-    .string()
-    .default("30d"),
+    JWT_ACCESS_EXPIRES_IN: z.string().default("15m"),
 
-  AUTH_COOKIE_SECURE: z
-    .string()
-    .optional()
-    .transform((val) => {
-      if (val === undefined || val === "") return undefined;
-      if (val === "true") return true;
-      if (val === "false") return false;
-      return undefined;
-    }),
-});
+    JWT_REFRESH_EXPIRES_IN: z.string().default("30d"),
+
+    AUTH_COOKIE_SECURE: z
+      .string()
+      .optional()
+      .transform((val) => {
+        if (val === undefined || val === "") return undefined;
+        if (val === "true") return true;
+        if (val === "false") return false;
+        return undefined;
+      }),
+  })
+  .superRefine((data, ctx) => {
+    if (
+      data.NODE_ENV === "production" &&
+      (!data.CORS_ORIGIN || data.CORS_ORIGIN.trim() === "")
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["CORS_ORIGIN"],
+        message:
+          "CORS_ORIGIN must be explicitly configured when NODE_ENV is production",
+      });
+    }
+  });
 
 export type Env = z.infer<typeof envSchema>;
