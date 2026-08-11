@@ -9,11 +9,20 @@ import {
   userRepository,
 } from "@mystic/database";
 
+import { UnauthorizedError } from "../../errors/http-error.js";
+
 export async function refreshService(
   refreshToken: string,
 ) {
-  const payload =
-    await verifyRefreshToken(refreshToken);
+  let payload;
+  try {
+    payload = await verifyRefreshToken(refreshToken);
+  } catch (err) {
+    throw new UnauthorizedError(
+      "INVALID_REFRESH_TOKEN",
+      "Invalid or expired refresh token",
+    );
+  }
 
   const session =
     await sessionRepository.findByRefreshToken(
@@ -21,7 +30,10 @@ export async function refreshService(
     );
 
   if (!session) {
-    throw new Error("Invalid refresh token");
+    throw new UnauthorizedError(
+      "INVALID_REFRESH_TOKEN",
+      "Invalid or expired refresh token",
+    );
   }
 
   if (session.expiresAt < new Date()) {
@@ -29,7 +41,10 @@ export async function refreshService(
       refreshToken,
     );
 
-    throw new Error("Refresh token expired");
+    throw new UnauthorizedError(
+      "INVALID_REFRESH_TOKEN",
+      "Invalid or expired refresh token",
+    );
   }
 
   const user =
@@ -42,7 +57,10 @@ export async function refreshService(
       refreshToken,
     );
 
-    throw new Error("User not found");
+    throw new UnauthorizedError(
+      "INVALID_REFRESH_TOKEN",
+      "Invalid or expired refresh token",
+    );
   }
 
   await sessionRepository.deleteByRefreshToken(

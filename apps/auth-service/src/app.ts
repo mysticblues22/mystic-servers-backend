@@ -46,7 +46,7 @@ export async function buildApp() {
   });
 
   // Centralized Sanitized Error Handler
-  app.setErrorHandler((error: Error & { statusCode?: number }, request: FastifyRequest, reply: FastifyReply) => {
+  app.setErrorHandler((error: Error & { statusCode?: number; code?: string }, request: FastifyRequest, reply: FastifyReply) => {
     request.log.error(error);
 
     if (error instanceof ZodError) {
@@ -63,7 +63,7 @@ export async function buildApp() {
 
     return reply.status(statusCode).send({
       error: {
-        code: isDomainError ? "BAD_REQUEST" : "INTERNAL_ERROR",
+        code: isDomainError ? (error.code || "BAD_REQUEST") : "INTERNAL_ERROR",
         message: isDomainError
           ? error.message
           : "An unexpected error occurred. Please try again later.",
