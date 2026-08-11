@@ -1,4 +1,4 @@
-import { UnauthorizedError } from "../../errors/http-error";
+import { UnauthorizedError } from "../../errors/http-error.js";
 import {
   createAccessToken,
   createRefreshToken,
@@ -23,7 +23,8 @@ export async function loginService(
     );
 
   if (!user) {
-    throw new Error(
+    throw new UnauthorizedError(
+      "INVALID_CREDENTIALS",
       "Invalid email or password",
     );
   }
@@ -36,8 +37,8 @@ export async function loginService(
 
   if (!valid) {
     throw new UnauthorizedError(
-    "INVALID_CREDENTIALS",
-    "Invalid email or password",
+      "INVALID_CREDENTIALS",
+      "Invalid email or password",
     );
   }
 
@@ -59,7 +60,7 @@ export async function loginService(
     refreshToken,
     expiresAt: new Date(
       Date.now() +
-      1000 * 60 * 60 * 24 * 30,
+        1000 * 60 * 60 * 24 * 30,
     ),
   });
 
