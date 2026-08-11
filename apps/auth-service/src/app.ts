@@ -11,6 +11,7 @@ import { registerForgotPasswordRoute } from "./routes/forgot-password.js";
 import { registerLoginRoutes } from "./routes/login.js";
 import { registerLogoutRoutes } from "./routes/logout.js";
 import { registerMeRoutes } from "./routes/me.js";
+import { registerOrderRoutes } from "./routes/orders.js";
 import { registerPlanRoutes } from "./routes/plans.js";
 import { registerRefreshRoutes } from "./routes/refresh.js";
 import { registerResetPasswordRoute } from "./routes/reset-password.js";
@@ -26,7 +27,7 @@ export async function buildApp() {
     origin: config.cors.origin,
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Request-ID"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Request-ID", "Idempotency-Key"],
   });
 
   // Register Cookie plugin
@@ -81,6 +82,7 @@ export async function buildApp() {
   await registerForgotPasswordRoute(app);
   await registerResetPasswordRoute(app);
   await registerPlanRoutes(app);
+  await registerOrderRoutes(app);
 
   return app;
 }
