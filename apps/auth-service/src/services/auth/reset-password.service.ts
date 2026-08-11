@@ -8,6 +8,7 @@ import {
   userRepository,
 } from "@mystic/database";
 
+import { HttpError } from "../../errors/http-error.js";
 import { ResetPasswordInput } from "../../schemas/auth.schema.js";
 
 export async function resetPasswordService(
@@ -24,14 +25,22 @@ export async function resetPasswordService(
     );
 
   if (!token) {
-    throw new Error("Invalid reset token");
+    throw new HttpError(
+      400,
+      "INVALID_RESET_TOKEN",
+      "Invalid or expired reset token",
+    );
   }
 
   if (
     token.expiresAt.getTime() <
     Date.now()
   ) {
-    throw new Error("Reset token expired");
+    throw new HttpError(
+      400,
+      "INVALID_RESET_TOKEN",
+      "Invalid or expired reset token",
+    );
   }
 
   const passwordHash =
