@@ -1,14 +1,15 @@
-import { migrate } from "drizzle-orm/node-postgres/migrator";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { bootstrap } from "@mystic/bootstrap";
-import { pool } from "./client.js";
-import { db } from "./drizzle.js";
 
 bootstrap({
-  envFile: "../../../infrastructure/env/backend.env",
+  envFile: process.env.ENV_FILE ?? "/srv/git/infrastructure/env/backend.env",
 });
+
+const { migrate } = await import("drizzle-orm/node-postgres/migrator");
+const { pool } = await import("./client.js");
+const { db } = await import("./drizzle.js");
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

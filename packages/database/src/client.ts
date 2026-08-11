@@ -3,9 +3,10 @@ import { Pool } from "pg";
 import { loadConfig } from "@mystic/config";
 
 const config = loadConfig();
+const host = process.env.DB_HOST_OVERRIDE || config.database.host;
 
 export const pool = new Pool({
-  host: config.database.host,
+  host,
   port: config.database.port,
   database: config.database.name,
   user: config.database.user,
