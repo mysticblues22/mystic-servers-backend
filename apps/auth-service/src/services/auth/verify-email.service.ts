@@ -5,11 +5,21 @@ import {
   userRepository,
 } from "@mystic/database";
 
+import { HttpError } from "../../errors/http-error.js";
+
 export async function verifyEmailService(
   accessToken: string,
 ) {
-  const payload =
-    await verifyAccessToken(accessToken);
+  let payload;
+  try {
+    payload = await verifyAccessToken(accessToken);
+  } catch {
+    throw new HttpError(
+      400,
+      "INVALID_VERIFICATION_TOKEN",
+      "Invalid verification token",
+    );
+  }
 
   const user =
     await userRepository.findById(
@@ -17,12 +27,18 @@ export async function verifyEmailService(
     );
 
   if (!user) {
-    throw new Error("User not found");
+    throw new HttpError(
+      400,
+      "INVALID_VERIFICATION_TOKEN",
+      "Invalid verification token",
+    );
   }
 
   if (user.isVerified) {
-    throw new Error(
-      "Email already verified",
+    throw new HttpError(
+      400,
+      "EMAIL_ALREADY_VERIFIED",
+      "Email is already verified",
     );
   }
 
