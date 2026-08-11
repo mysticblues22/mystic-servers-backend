@@ -9,6 +9,8 @@ bootstrap({
 
 const config = loadConfig();
 
+const host = process.env.DB_HOST_OVERRIDE || config.database.host;
+
 export default defineConfig({
   dialect: "postgresql",
 
@@ -17,7 +19,7 @@ export default defineConfig({
   out: "./src/migrations",
 
   dbCredentials: {
-    host: config.database.host,
+    host,
     port: config.database.port,
     user: config.database.user,
     password: config.database.password,
