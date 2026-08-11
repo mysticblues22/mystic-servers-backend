@@ -63,24 +63,31 @@ export async function refreshService(
     );
   }
 
-  await sessionRepository.deleteByRefreshToken(
-    refreshToken,
-  );
-
   const newRefreshToken =
     await createRefreshToken({
       userId: user.id,
       tokenId: crypto.randomUUID(),
     });
 
-  await sessionRepository.create({
-    userId: user.id,
-    refreshToken: newRefreshToken,
-    expiresAt: new Date(
-      Date.now() +
-        1000 * 60 * 60 * 24 * 30,
-    ),
-  });
+  const newSession =
+    await sessionRepository.rotateSession(
+      refreshToken,
+      {
+        userId: user.id,
+        refreshToken: newRefreshToken,
+        expiresAt: new Date(
+          Date.now() +
+            1000 * 60 * 60 * 24 * 30,
+        ),
+      },
+    );
+
+  if (!newSession) {
+    throw new UnauthorizedError(
+      "INVALID_REFRESH_TOKEN",
+      "Invalid or expired refresh token",
+    );
+  }
 
   const accessToken =
     await createAccessToken({

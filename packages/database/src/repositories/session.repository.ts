@@ -67,13 +67,42 @@ export class SessionRepository {
           ),
         ),
       );
-    }
+  }
+
   async deleteAllByUser(
     userId: string,
   ) {
     await db
       .delete(sessions)
       .where(eq(sessions.userId, userId));
+  }
+
+  async rotateSession(
+    oldRefreshToken: string,
+    newSessionData: typeof sessions.$inferInsert,
+  ) {
+    return await db.transaction(async (tx) => {
+      const [deleted] = await tx
+        .delete(sessions)
+        .where(
+          eq(
+            sessions.refreshToken,
+            oldRefreshToken,
+          ),
+        )
+        .returning();
+
+      if (!deleted) {
+        return null;
+      }
+
+      const [created] = await tx
+        .insert(sessions)
+        .values(newSessionData)
+        .returning();
+
+      return created;
+    });
   }
 }
 
