@@ -1,6 +1,7 @@
 import type { FastifyInstance } from "fastify";
 
 import {
+  cancelOrderController,
   createOrderController,
   getOrderByIdController,
   listOrdersController,
@@ -22,6 +23,14 @@ export async function registerOrderRoutes(app: FastifyInstance) {
       preHandler: [authMiddleware],
     },
     getOrderByIdController,
+  );
+
+  app.post(
+    "/orders/:id/cancel",
+    {
+      preHandler: [authMiddleware],
+    },
+    cancelOrderController,
   );
 
   app.post(

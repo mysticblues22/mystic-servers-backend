@@ -25,6 +25,35 @@ export async function getOrderByIdService(userId: string, orderId: string) {
   return { order };
 }
 
+export async function cancelOrderService(userId: string, orderId: string) {
+  const existingOrder = await orderRepository.findByUserIdAndId(userId, orderId);
+
+  if (!existingOrder) {
+    throw new HttpError(404, "ORDER_NOT_FOUND", "Order not found");
+  }
+
+  const cancellableStatuses = ["pending", "awaiting_payment"];
+  if (!cancellableStatuses.includes(existingOrder.status)) {
+    throw new HttpError(
+      400,
+      "INVALID_ORDER_STATUS",
+      "Order cannot be cancelled in its current status",
+    );
+  }
+
+  const updatedOrder = await orderRepository.updateStatusByUserIdAndId(
+    userId,
+    orderId,
+    "cancelled",
+  );
+
+  if (!updatedOrder) {
+    throw new HttpError(404, "ORDER_NOT_FOUND", "Order not found");
+  }
+
+  return { order: updatedOrder };
+}
+
 export async function createOrderService(
   userId: string,
   input: CreateOrderInput,

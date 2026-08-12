@@ -7,6 +7,7 @@ import {
   idempotencyHeaderSchema,
 } from "../schemas/order.schema.js";
 import {
+  cancelOrderService,
   createOrderService,
   getOrderByIdService,
   getOrdersService,
@@ -37,6 +38,20 @@ export async function getOrderByIdController(
   const params = getOrderByIdSchema.parse(request.params);
   const result = await getOrderByIdService(userId, params.id);
   return reply.send(result);
+}
+
+export async function cancelOrderController(
+  request: FastifyRequest,
+  reply: FastifyReply,
+) {
+  if (!request.user) {
+    throw new HttpError(401, "UNAUTHORIZED", "Unauthorized");
+  }
+
+  const userId = request.user.id;
+  const params = getOrderByIdSchema.parse(request.params);
+  const result = await cancelOrderService(userId, params.id);
+  return reply.status(200).send(result);
 }
 
 export async function createOrderController(

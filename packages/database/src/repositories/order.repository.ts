@@ -70,6 +70,30 @@ export class OrderRepository {
     return { ...order, items };
   }
 
+  async updateStatusByUserIdAndId(
+    userId: string,
+    orderId: string,
+    status: "pending" | "awaiting_payment" | "paid" | "provisioning" | "active" | "cancelled" | "failed" | "refunded",
+  ) {
+    const [updatedOrder] = await db
+      .update(orders)
+      .set({
+        status,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(orders.id, orderId), eq(orders.userId, userId)))
+      .returning();
+
+    if (!updatedOrder) return null;
+
+    const items = await db
+      .select()
+      .from(orderItems)
+      .where(eq(orderItems.orderId, updatedOrder.id));
+
+    return { ...updatedOrder, items };
+  }
+
   async findByUserIdAndIdempotencyKey(userId: string, idempotencyKey: string) {
     const [order] = await db
       .select()
