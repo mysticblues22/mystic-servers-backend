@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 
 import { db } from "../drizzle.js";
 import { orderItems } from "../schema/order-items.js";
@@ -24,6 +24,52 @@ export interface CreateOrderParams {
 }
 
 export class OrderRepository {
+  async findByUserId(userId: string) {
+    const userOrders = await db
+      .select()
+      .from(orders)
+      .where(eq(orders.userId, userId))
+      .orderBy(desc(orders.createdAt));
+
+    if (userOrders.length === 0) {
+      return [];
+    }
+
+    const orderIds = userOrders.map((o) => o.id);
+    const allItems = await db
+      .select()
+      .from(orderItems)
+      .where(inArray(orderItems.orderId, orderIds));
+
+    const itemsByOrderId = new Map<string, typeof allItems>();
+    for (const item of allItems) {
+      const existing = itemsByOrderId.get(item.orderId) || [];
+      existing.push(item);
+      itemsByOrderId.set(item.orderId, existing);
+    }
+
+    return userOrders.map((order) => ({
+      ...order,
+      items: itemsByOrderId.get(order.id) || [],
+    }));
+  }
+
+  async findByUserIdAndId(userId: string, orderId: string) {
+    const [order] = await db
+      .select()
+      .from(orders)
+      .where(and(eq(orders.id, orderId), eq(orders.userId, userId)));
+
+    if (!order) return null;
+
+    const items = await db
+      .select()
+      .from(orderItems)
+      .where(eq(orderItems.orderId, order.id));
+
+    return { ...order, items };
+  }
+
   async findByUserIdAndIdempotencyKey(userId: string, idempotencyKey: string) {
     const [order] = await db
       .select()

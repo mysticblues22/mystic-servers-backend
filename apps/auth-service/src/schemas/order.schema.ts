@@ -20,4 +20,9 @@ export const idempotencyHeaderSchema = z
   .max(255, "Idempotency-Key cannot exceed 255 characters")
   .optional();
 
+export const getOrderByIdSchema = z.object({
+  id: z.string().uuid("Invalid order ID format"),
+});
+
 export type CreateOrderInput = z.infer<typeof createOrderSchema>;
+export type GetOrderByIdInput = z.infer<typeof getOrderByIdSchema>;

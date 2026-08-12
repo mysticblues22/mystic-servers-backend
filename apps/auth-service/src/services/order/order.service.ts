@@ -10,6 +10,21 @@ function generateOrderNumber(): string {
   return `ORD-${timestampPart}-${randomPart}`;
 }
 
+export async function getOrdersService(userId: string) {
+  const orders = await orderRepository.findByUserId(userId);
+  return { orders };
+}
+
+export async function getOrderByIdService(userId: string, orderId: string) {
+  const order = await orderRepository.findByUserIdAndId(userId, orderId);
+
+  if (!order) {
+    throw new HttpError(404, "ORDER_NOT_FOUND", "Order not found");
+  }
+
+  return { order };
+}
+
 export async function createOrderService(
   userId: string,
   input: CreateOrderInput,
