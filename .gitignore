@@ -14,3 +14,9 @@ coverage/
 .idea/
 
 .DS_Store
+
+# Local VPS/runtime files
+.pnpm-store/
+infrastructure/
+node_modules/
+dist/
