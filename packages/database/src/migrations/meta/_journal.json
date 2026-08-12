@@ -22,6 +22,20 @@
       "when": 1786440341758,
       "tag": "0002_add_platform_foundation_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1786519594590,
+      "tag": "0003_add_payment_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1786519621134,
+      "tag": "0004_add_india_plan_prices",
+      "breakpoints": true
     }
   ]
 }
