@@ -33,10 +33,15 @@ export const plans = pgTable("plans", {
 
   bandwidthTb: integer("bandwidth_tb").default(1).notNull(),
 
-  // Pricing (in bigint cents)
+  // International USD Pricing (in minor unit cents)
   monthlyPriceCents: bigint("monthly_price_cents", { mode: "number" }).notNull(),
 
   annualPriceCents: bigint("annual_price_cents", { mode: "number" }).notNull(),
+
+  // India INR Pricing (in minor unit paise, nullable until configured)
+  monthlyPriceInrCents: bigint("monthly_price_inr_cents", { mode: "number" }),
+
+  annualPriceInrCents: bigint("annual_price_inr_cents", { mode: "number" }),
 
   currency: varchar("currency", { length: 3 }).default("USD").notNull(),
 

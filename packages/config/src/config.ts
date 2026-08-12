@@ -67,5 +67,12 @@ export function loadConfig() {
     cookie: {
       secure: cookieSecure,
     },
+
+    razorpay: {
+      keyId: env.RAZORPAY_KEY_ID || "rzp_test_mock_key_id",
+      keySecret: env.RAZORPAY_KEY_SECRET || "mock_key_secret",
+      webhookSecret: env.RAZORPAY_WEBHOOK_SECRET || "mock_webhook_secret",
+      supportedPaymentCurrencies: ["USD", "INR"] as const,
+    },
   } as const;
 }

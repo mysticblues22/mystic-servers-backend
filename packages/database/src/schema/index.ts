@@ -7,3 +7,5 @@ export * from "./orders.js";
 export * from "./order-items.js";
 export * from "./invoices.js";
 export * from "./invoice-items.js";
+export * from "./payments.js";
+export * from "./payment-webhook-events.js";

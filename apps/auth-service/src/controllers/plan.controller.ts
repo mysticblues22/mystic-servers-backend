@@ -10,28 +10,36 @@ import {
   getPublicPlansService,
 } from "../services/plan/plan.service.js";
 
+interface PricingQuery {
+  currency?: string;
+  region?: string;
+}
+
 export async function listPlansController(
-  _request: FastifyRequest,
+  request: FastifyRequest<{ Querystring: PricingQuery }>,
   reply: FastifyReply,
 ) {
-  const result = await getPublicPlansService();
+  const query = request.query || {};
+  const result = await getPublicPlansService(query.currency, query.region);
   return reply.send(result);
 }
 
 export async function getPlanByIdController(
-  request: FastifyRequest,
+  request: FastifyRequest<{ Querystring: PricingQuery }>,
   reply: FastifyReply,
 ) {
+  const query = request.query || {};
   const params = getPlanByIdSchema.parse(request.params);
-  const result = await getPlanByIdService(params.id);
+  const result = await getPlanByIdService(params.id, query.currency, query.region);
   return reply.send(result);
 }
 
 export async function getPlanBySlugController(
-  request: FastifyRequest,
+  request: FastifyRequest<{ Querystring: PricingQuery }>,
   reply: FastifyReply,
 ) {
+  const query = request.query || {};
   const params = getPlanBySlugSchema.parse(request.params);
-  const result = await getPlanBySlugService(params.slug);
+  const result = await getPlanBySlugService(params.slug, query.currency, query.region);
   return reply.send(result);
 }

@@ -66,5 +66,6 @@ export const orders = pgTable(
       table.userId,
       table.idempotencyKey,
     ),
+    idUserIdUnique: unique("orders_id_user_id_unique").on(table.id, table.userId),
   }),
 );

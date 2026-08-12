@@ -7,11 +7,14 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 import { ZodError } from "zod";
 
 import { registerAuthRoutes } from "./routes/auth.js";
+import { registerCurrencyRoutes } from "./routes/currencies.js";
 import { registerForgotPasswordRoute } from "./routes/forgot-password.js";
+import { registerInvoiceRoutes } from "./routes/invoices.js";
 import { registerLoginRoutes } from "./routes/login.js";
 import { registerLogoutRoutes } from "./routes/logout.js";
 import { registerMeRoutes } from "./routes/me.js";
 import { registerOrderRoutes } from "./routes/orders.js";
+import { registerPaymentRoutes } from "./routes/payments.js";
 import { registerPlanRoutes } from "./routes/plans.js";
 import { registerRefreshRoutes } from "./routes/refresh.js";
 import { registerResetPasswordRoute } from "./routes/reset-password.js";
@@ -22,12 +25,35 @@ const config = loadConfig();
 export async function buildApp() {
   const app = await createServer();
 
+  // Custom JSON Content Parser to preserve raw body for Webhook HMAC Signature verification
+  app.addContentTypeParser(
+    "application/json",
+    { parseAs: "buffer" },
+    (req, body, done) => {
+      try {
+        const rawString = body.toString("utf8");
+        (req as any).rawBody = rawString;
+        const json = JSON.parse(rawString);
+        done(null, json);
+      } catch (err: any) {
+        err.statusCode = 400;
+        done(err, undefined);
+      }
+    },
+  );
+
   // Register CORS
   await app.register(fastifyCors, {
     origin: config.cors.origin,
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Request-ID", "Idempotency-Key"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Request-ID",
+      "Idempotency-Key",
+      "X-Razorpay-Signature",
+    ],
   });
 
   // Register Cookie plugin
@@ -82,7 +108,10 @@ export async function buildApp() {
   await registerForgotPasswordRoute(app);
   await registerResetPasswordRoute(app);
   await registerPlanRoutes(app);
+  await registerCurrencyRoutes(app);
   await registerOrderRoutes(app);
+  await registerPaymentRoutes(app);
+  await registerInvoiceRoutes(app);
 
   return app;
 }

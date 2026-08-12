@@ -21,6 +21,7 @@
     "@mystic/database": "workspace:*",
     "@mystic/logger": "workspace:*",
     "fastify": "^5.11.3",
+    "razorpay": "^2.9.8",
     "zod": "^4.4.3"
   },
   "devDependencies": {
