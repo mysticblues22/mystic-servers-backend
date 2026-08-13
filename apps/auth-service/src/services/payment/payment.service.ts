@@ -1,7 +1,8 @@
-import { invoiceRepository, orderRepository, paymentRepository } from "@mystic/database";
+import { invoiceRepository, orderRepository, paymentRepository, userRepository } from "@mystic/database";
 
 import { HttpError } from "../../errors/http-error.js";
 import { InitiatePaymentInput, VerifyPaymentInput } from "../../schemas/payment.schema.js";
+import { emailService } from "../email/email.service.js";
 import {
   calculatePaymentAmount,
   exchangeRateService,
@@ -288,9 +289,10 @@ export async function verifyPaymentService(
     "paid",
   );
 
-  // 9. Idempotent Invoice Issuance
+  // 9. Idempotent Invoice Issuance & Email Notifications
+  let generatedInvoice: any = null;
   try {
-    await invoiceRepository.createInvoiceForPaidOrder(
+    generatedInvoice = await invoiceRepository.createInvoiceForPaidOrder(
       updatedOrder || order,
       updatedPayment || payment,
     );
@@ -300,6 +302,26 @@ export async function verifyPaymentService(
       invoiceErr.message,
     );
   }
+
+  // Dispatch payment & invoice notification emails asynchronously
+  (async () => {
+    try {
+      const user = await userRepository.findById(userId);
+      if (user && user.email) {
+        const orderNum = order.orderNumber;
+        const formattedAmount = `${((payment.amountCents || order.totalAmountCents) / 100).toFixed(2)}`;
+        const currency = payment.currency || order.currency || "USD";
+
+        await emailService.sendPaymentConfirmationEmail(user.email, orderNum, formattedAmount, currency, user.username);
+
+        if (generatedInvoice) {
+          await emailService.sendInvoiceNotificationEmail(user.email, generatedInvoice.invoiceNumber || `INV-${order.id.slice(0, 6)}`, formattedAmount, currency, user.username);
+        }
+      }
+    } catch (emailErr: any) {
+      console.error("[Payment Email Dispatch Error]", emailErr?.message);
+    }
+  })();
 
   return {
     order: updatedOrder || order,

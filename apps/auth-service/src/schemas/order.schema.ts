@@ -2,9 +2,8 @@ import { z } from "zod";
 
 export const createOrderSchema = z.object({
   planId: z.string().uuid("Invalid plan ID format"),
-  billingCycle: z.enum(["monthly", "annual"], {
-    message: "Billing cycle must be either 'monthly' or 'annual'",
-  }),
+  billingCycle: z.string().default("monthly"),
+  termMonths: z.number().int().min(1).max(36).optional(),
   quantity: z
     .number()
     .int("Quantity must be an integer")

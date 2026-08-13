@@ -19,6 +19,12 @@ import { registerPlanRoutes } from "./routes/plans.js";
 import { registerRefreshRoutes } from "./routes/refresh.js";
 import { registerResetPasswordRoute } from "./routes/reset-password.js";
 import { registerVerifyEmailRoutes } from "./routes/verify-email.js";
+import { registerContactRoutes } from "./routes/contact.js";
+import { registerProductRoutes } from "./routes/products.js";
+import { registerRegionRoutes } from "./routes/region.js";
+import { registerPlanAdminRoutes } from "./routes/plan-admin.js";
+import { registerIPv4AdminRoutes } from "./routes/ipv4-admin.js";
+import { registerEmailAdminRoutes } from "./routes/email-admin.js";
 
 const config = loadConfig();
 
@@ -112,6 +118,12 @@ export async function buildApp() {
   await registerOrderRoutes(app);
   await registerPaymentRoutes(app);
   await registerInvoiceRoutes(app);
+  await registerContactRoutes(app);
+  await registerProductRoutes(app);
+  await registerRegionRoutes(app);
+  await registerPlanAdminRoutes(app);
+  await registerIPv4AdminRoutes(app);
+  await registerEmailAdminRoutes(app);
 
   return app;
 }

@@ -7,6 +7,65 @@ bootstrap({
 const { pool } = await import("./client.js");
 const { db } = await import("./drizzle.js");
 const { plans } = await import("./schema/plans.js");
+const { products } = await import("./schema/products.js");
+
+export const catalogProducts = [
+  {
+    slug: "vps",
+    name: "Cloud VPS",
+    category: "vps",
+    shortDescription: "High-performance enterprise NVMe Cloud Virtual Private Servers.",
+    fullDescription: "Dedicated virtual compute resources backed by latest Gen4 NVMe arrays, DDR5 memory, and high-speed network interfaces.",
+    features: "NVMe Storage, Root Access, Instant Provisioning, Automated Backups, DDoS Protection",
+    icon: "Server",
+    status: "active" as const,
+    sortOrder: 1,
+  },
+  {
+    slug: "cloud",
+    name: "Cloud Hosting",
+    category: "cloud",
+    shortDescription: "Scalable multi-tenant cloud compute nodes for elastic workloads.",
+    fullDescription: "Auto-scaling cloud infrastructure built for high availability applications and distributed microservice clusters.",
+    features: "Auto-Scaling, High Availability, Load Balancing, Managed Kubernetes Support",
+    icon: "Cloud",
+    status: "disabled" as const,
+    sortOrder: 2,
+  },
+  {
+    slug: "dedicated",
+    name: "Dedicated Servers",
+    category: "dedicated",
+    shortDescription: "Bare-metal dedicated hardware for maximum performance and isolation.",
+    fullDescription: "Single-tenant bare metal servers with unthrottled CPU cores, enterprise ECC RAM, and dedicated network ports.",
+    features: "Bare-Metal Hardware, 10Gbps Uplink, IPMI/KVM Access, Unmetered Bandwidth Options",
+    icon: "Cpu",
+    status: "disabled" as const,
+    sortOrder: 3,
+  },
+  {
+    slug: "game",
+    name: "Game Hosting",
+    category: "game",
+    shortDescription: "Low-latency game server hosting powered by high clock-speed processors.",
+    fullDescription: "Optimized server instances for Minecraft, Rust, ARK, and custom multiplayer game servers with low ping routes.",
+    features: "High Single-Core Frequency, Custom Mod Managers, Low-Latency Anycast Routing, DDoS Mitigation",
+    icon: "Gamepad",
+    status: "disabled" as const,
+    sortOrder: 4,
+  },
+  {
+    slug: "web",
+    name: "Web Hosting",
+    category: "web",
+    shortDescription: "Managed web hosting with cPanel/Plesk and automated SSL certificates.",
+    fullDescription: "Turnkey website hosting environment with 1-click installer scripts, free SSL, and managed email mailboxes.",
+    features: "1-Click App Installer, Free SSL Certificates, Daily Offsite Backups, NVMe Powered",
+    icon: "Globe",
+    status: "disabled" as const,
+    sortOrder: 5,
+  },
+];
 
 export const catalogPlans = [
   {
@@ -87,14 +146,49 @@ export const catalogPlans = [
 ];
 
 async function seed() {
-  console.log("🌱 Starting idempotent production plan catalog seed...");
+  console.log("🌱 Starting idempotent production product and plan catalog seed...");
 
   try {
+    const productMap: Record<string, string> = {};
+
+    for (const prodData of catalogProducts) {
+      const [inserted] = await db
+        .insert(products)
+        .values({
+          ...prodData,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .onConflictDoUpdate({
+          target: products.slug,
+          set: {
+            name: prodData.name,
+            category: prodData.category,
+            shortDescription: prodData.shortDescription,
+            fullDescription: prodData.fullDescription,
+            features: prodData.features,
+            icon: prodData.icon,
+            status: prodData.status,
+            sortOrder: prodData.sortOrder,
+            updatedAt: new Date(),
+          },
+        })
+        .returning({ id: products.id, slug: products.slug });
+
+      if (inserted) {
+        productMap[inserted.slug] = inserted.id;
+      }
+      console.log(`  ✓ Product '${prodData.slug}' (${prodData.name} - ${prodData.status}) processed.`);
+    }
+
+    const vpsProductId = productMap["vps"];
+
     for (const planData of catalogPlans) {
       await db
         .insert(plans)
         .values({
           ...planData,
+          productId: vpsProductId,
           createdAt: new Date(),
           updatedAt: new Date(),
         })
@@ -102,6 +196,7 @@ async function seed() {
           target: plans.slug,
           set: {
             name: planData.name,
+            productId: vpsProductId,
             description: planData.description,
             cpuCores: planData.cpuCores,
             ramMb: planData.ramMb,
@@ -119,6 +214,12 @@ async function seed() {
 
       console.log(`  ✓ Plan '${planData.slug}' (${planData.name}) processed.`);
     }
+
+    // Admin promotion for designated administrative account
+    const { users } = await import("./schema/users.js");
+    const { eq } = await import("drizzle-orm");
+    await db.update(users).set({ role: "admin" }).where(eq(users.email, "rdhanush07@gmail.com"));
+    console.log("  ✓ Admin role verified/promoted for rdhanush07@gmail.com");
 
     console.log("✅ Production plan catalog seed completed successfully!");
   } catch (err) {

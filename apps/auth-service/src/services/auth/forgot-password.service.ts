@@ -4,6 +4,7 @@ import {
   userRepository,
 } from "@mystic/database";
 import { ForgotPasswordInput } from "../../schemas/auth.schema.js";
+import { emailService } from "../email/email.service.js";
 
 export async function forgotPasswordService(
   input: ForgotPasswordInput,
@@ -34,6 +35,11 @@ export async function forgotPasswordService(
     tokenHash,
     expiresAt: new Date(Date.now() + 1000 * 60 * 60),
   });
+
+  // Dispatch password reset email asynchronously
+  emailService
+    .sendPasswordResetEmail(user.email, token, user.username)
+    .catch((err) => console.error("[Password Reset Email Dispatch Error]", err?.message));
 
   return genericResponse;
 }

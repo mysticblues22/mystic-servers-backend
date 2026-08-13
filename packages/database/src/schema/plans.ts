@@ -1,5 +1,6 @@
 import {
   bigint,
+  boolean,
   integer,
   pgEnum,
   pgTable,
@@ -18,11 +19,15 @@ export const planStatusEnum = pgEnum("plan_status", [
 export const plans = pgTable("plans", {
   id: uuid("id").defaultRandom().primaryKey(),
 
+  productId: uuid("product_id"),
+
   slug: varchar("slug", { length: 50 }).notNull().unique(),
 
   name: varchar("name", { length: 100 }).notNull(),
 
   description: text("description"),
+
+  sortOrder: integer("sort_order").default(0).notNull(),
 
   // Technical Specifications
   cpuCores: integer("cpu_cores").notNull(),
@@ -32,6 +37,10 @@ export const plans = pgTable("plans", {
   diskGb: integer("disk_gb").notNull(),
 
   bandwidthTb: integer("bandwidth_tb").default(1).notNull(),
+
+  ipv4Included: integer("ipv4_included").default(1).notNull(),
+
+  ipv6Available: boolean("ipv6_available").default(true).notNull(),
 
   // International USD Pricing (in minor unit cents)
   monthlyPriceCents: bigint("monthly_price_cents", { mode: "number" }).notNull(),

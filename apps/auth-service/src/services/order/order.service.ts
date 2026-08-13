@@ -86,17 +86,30 @@ export async function createOrderService(
     );
   }
 
-  // 3. Server-side price calculation
-  const unitPriceCents =
-    input.billingCycle === "annual"
-      ? plan.annualPriceCents
-      : plan.monthlyPriceCents;
+  // 3. Server-side price calculation accounting for duration months
+  let durationMonths = input.termMonths || 1;
+  const cycleLower = (input.billingCycle || "").toLowerCase();
 
-  const totalPriceCents = unitPriceCents * input.quantity;
+  if (cycleLower.includes("annual") || cycleLower.includes("12") || cycleLower === "year") {
+    durationMonths = 12;
+  } else if (cycleLower.includes("semi") || cycleLower.includes("6")) {
+    durationMonths = 6;
+  } else if (cycleLower.includes("24") || cycleLower.includes("biennial")) {
+    durationMonths = 24;
+  }
+
+  let unitPriceCents = plan.monthlyPriceCents;
+  let termMultiplier = durationMonths;
+  if (durationMonths === 12 && plan.annualPriceCents) {
+    unitPriceCents = plan.annualPriceCents;
+    termMultiplier = 1; // annualPriceCents is the total annual price
+  }
+
+  const totalPriceCents = unitPriceCents * termMultiplier * input.quantity;
   const subtotalAmountCents = totalPriceCents;
   const totalAmountCents = totalPriceCents;
   const currency = plan.currency;
-  const cycleLabel = input.billingCycle === "annual" ? "Annual" : "Monthly";
+  const cycleLabel = durationMonths > 1 ? `${durationMonths} Months` : (input.billingCycle === "annual" ? "Annual" : "Monthly");
   const description = `${plan.name} Plan (${cycleLabel})`;
   const orderNumber = generateOrderNumber();
 

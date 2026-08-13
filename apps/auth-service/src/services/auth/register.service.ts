@@ -11,6 +11,7 @@ import {
 
 import { HttpError } from "../../errors/http-error.js";
 import { RegisterInput } from "../../schemas/auth.schema.js";
+import { emailService } from "../email/email.service.js";
 
 export async function registerService(
   input: RegisterInput,
@@ -71,6 +72,11 @@ export async function registerService(
         1000 * 60 * 60 * 24 * 30,
     ),
   });
+
+  // Dispatch email verification asynchronously
+  emailService
+    .sendVerificationEmail(user.email, accessToken, user.username)
+    .catch((err) => console.error("[Verification Email Dispatch Error]", err?.message));
 
   return {
     id: user.id,
