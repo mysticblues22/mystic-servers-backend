@@ -221,7 +221,178 @@ async function seed() {
     await db.update(users).set({ role: "admin" }).where(eq(users.email, "rdhanush07@gmail.com"));
     console.log("  ✓ Admin role verified/promoted for rdhanush07@gmail.com");
 
-    console.log("✅ Production plan catalog seed completed successfully!");
+    // Email Settings & Templates Bootstrap
+    const { emailSettings } = await import("./schema/email-settings.js");
+    const { emailTemplates } = await import("./schema/email-templates.js");
+    const crypto = await import("node:crypto");
+
+    const [existingSettings] = await db.select().from(emailSettings).limit(1);
+
+    const smtpHost = process.env.SMTP_HOST || "smtp.resend.com";
+    const smtpPort = Number(process.env.SMTP_PORT || 465);
+    const smtpUser = process.env.SMTP_USER || "resend";
+    const smtpPass = process.env.SMTP_PASS;
+    const smtpSecure = process.env.SMTP_SECURE === "true" || smtpPort === 465;
+    const smtpFrom = process.env.SMTP_FROM || "Mystic Servers <noreply@mysticservers.com>";
+    const supportEmail = process.env.SUPPORT_EMAIL || "support@mysticservers.com";
+    const encryptionKey = process.env.ENCRYPTION_KEY;
+
+    if (!existingSettings || !existingSettings.encryptedSmtpPass) {
+      let encryptedPass: string | null = null;
+
+      if (smtpPass && encryptionKey) {
+        const key = crypto.createHash("sha256").update(encryptionKey).digest();
+        const iv = crypto.randomBytes(12);
+        const cipher = crypto.createCipheriv("aes-256-gcm", key, iv);
+        let enc = cipher.update(smtpPass, "utf8", "hex");
+        enc += cipher.final("hex");
+        const tag = cipher.getAuthTag().toString("hex");
+        encryptedPass = `${iv.toString("hex")}:${tag}:${enc}`;
+      }
+
+      if (existingSettings) {
+        await db
+          .update(emailSettings)
+          .set({
+            smtpHost,
+            smtpPort,
+            smtpUser,
+            ...(encryptedPass ? { encryptedSmtpPass: encryptedPass } : {}),
+            smtpSecure,
+            smtpFrom,
+            supportEmail,
+            updatedAt: new Date(),
+          })
+          .where(eq(emailSettings.id, existingSettings.id));
+        console.log("  ✓ email_settings updated with production configuration.");
+      } else {
+        await db.insert(emailSettings).values({
+          provider: "smtp",
+          smtpHost,
+          smtpPort,
+          smtpUser,
+          encryptedSmtpPass: encryptedPass,
+          smtpSecure,
+          smtpFrom,
+          supportEmail,
+          emailsEnabled: true,
+          dailyLimit: 80,
+          monthlyLimit: 2500,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+        console.log("  ✓ email_settings initialized with production configuration.");
+      }
+    } else {
+      console.log("  ✓ email_settings already exists with configured credentials; preserving existing configuration.");
+    }
+
+    // Default Email Templates Bootstrap
+    const defaultTemplates = [
+      {
+        key: "verification",
+        name: "Email Verification",
+        subject: "Verify Your Mystic Servers Account",
+        variablesJson: JSON.stringify(["username", "verification_url", "support_email"]),
+        htmlBody: `<div style="background-color: #0b0f19; color: #f3f4f6; font-family: sans-serif; padding: 32px; max-width: 600px; margin: 0 auto; border-radius: 12px; border: 1px solid #1f2937;"><div style="text-align: center; margin-bottom: 24px;"><h2 style="color: #6366f1; margin: 0; font-size: 24px; font-weight: 800;">MYSTIC SERVERS</h2><p style="color: #9ca3af; font-size: 12px; margin-top: 4px;">Enterprise NVMe Cloud Infrastructure</p></div><hr style="border: 0; border-top: 1px solid #1f2937; margin: 20px 0;" /><p style="font-size: 16px;">Hello <strong>{{username}}</strong>,</p><p style="color: #d1d5db; line-height: 1.6;">Thank you for creating an account with Mystic Servers. Please verify your email address to complete your registration and activate high-performance cloud deployment capabilities.</p><div style="text-align: center; margin: 32px 0;"><a href="{{verification_url}}" style="background-color: #6366f1; color: #ffffff; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 8px; display: inline-block;">Verify Email Address</a></div><p style="font-size: 12px; color: #6b7280; line-height: 1.5;">If the button above does not work, copy and paste this link into your browser:<br/><a href="{{verification_url}}" style="color: #6366f1;">{{verification_url}}</a></p><hr style="border: 0; border-top: 1px solid #1f2937; margin: 24px 0;" /><p style="font-size: 11px; color: #6b7280; text-align: center;">Mystic Servers Inc. • Need help? Contact <a href="mailto:{{support_email}}" style="color: #9ca3af;">{{support_email}}</a></p></div>`,
+        textBody: "Hello {{username}},\n\nPlease verify your Mystic Servers account by opening the following link:\n{{verification_url}}\n\nNeed help? Contact {{support_email}}",
+      },
+      {
+        key: "password_reset",
+        name: "Password Reset Request",
+        subject: "Password Reset Request — Mystic Servers",
+        variablesJson: JSON.stringify(["username", "reset_url", "support_email"]),
+        htmlBody: `<div style="background-color: #0b0f19; color: #f3f4f6; font-family: sans-serif; padding: 32px; max-width: 600px; margin: 0 auto; border-radius: 12px; border: 1px solid #1f2937;"><div style="text-align: center; margin-bottom: 24px;"><h2 style="color: #6366f1; margin: 0; font-size: 24px; font-weight: 800;">MYSTIC SERVERS</h2></div><hr style="border: 0; border-top: 1px solid #1f2937; margin: 20px 0;" /><p style="font-size: 16px;">Hello <strong>{{username}}</strong>,</p><p style="color: #d1d5db; line-height: 1.6;">We received a request to reset the password for your account. Click the button below to specify a new password:</p><div style="text-align: center; margin: 32px 0;"><a href="{{reset_url}}" style="background-color: #ef4444; color: #ffffff; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 8px; display: inline-block;">Reset Password</a></div><p style="font-size: 12px; color: #6b7280;">If you did not request this reset, you can safely ignore this email.</p></div>`,
+        textBody: "Hello {{username}},\n\nReset your password here:\n{{reset_url}}\n\nIf you did not request this, ignore this email.",
+      },
+      {
+        key: "2fa_otp",
+        name: "2FA Security OTP Code",
+        subject: "Your Mystic Security OTP Code",
+        variablesJson: JSON.stringify(["otp", "otp_expiry", "support_email"]),
+        htmlBody: `<div style="background-color: #0b0f19; color: #f3f4f6; font-family: sans-serif; padding: 32px; max-width: 600px; margin: 0 auto; border-radius: 12px; border: 1px solid #1f2937;"><h2 style="color: #6366f1; margin: 0; font-size: 24px; font-weight: 800; text-align: center;">SECURITY VERIFICATION</h2><hr style="border: 0; border-top: 1px solid #1f2937; margin: 20px 0;" /><p style="color: #d1d5db;">Your One-Time Security Authentication Code is:</p><div style="text-align: center; margin: 24px 0; background-color: #111827; padding: 20px; border-radius: 8px; font-family: monospace; font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #10b981; border: 1px solid #374151;">{{otp}}</div><p style="font-size: 12px; color: #9ca3af; text-align: center;">This code will expire in {{otp_expiry}} minutes. Do not share this code with anyone.</p></div>`,
+        textBody: "Your Mystic Servers 2FA OTP code is: {{otp}}. Valid for {{otp_expiry}} minutes.",
+      },
+      {
+        key: "contact_ticket",
+        name: "Contact Ticket Notification",
+        subject: "[Contact Ticket {{ticket_id}}] {{subject}}",
+        variablesJson: JSON.stringify(["ticket_id", "name", "email", "subject", "message"]),
+        htmlBody: `<div style="background-color: #0b0f19; color: #f3f4f6; font-family: sans-serif; padding: 32px; max-width: 600px; margin: 0 auto; border-radius: 12px; border: 1px solid #1f2937;"><h3 style="color: #6366f1;">New Customer Contact Inquiry</h3><p><strong>Ticket ID:</strong> {{ticket_id}}</p><p><strong>Name:</strong> {{name}}</p><p><strong>Email:</strong> {{email}}</p><p><strong>Subject:</strong> {{subject}}</p><hr style="border: 0; border-top: 1px solid #1f2937; margin: 20px 0;" /><p><strong>Message:</strong></p><div style="background: #111827; padding: 16px; border-radius: 6px; color: #d1d5db;">{{message}}</div></div>`,
+        textBody: "New Ticket {{ticket_id}} from {{name}} ({{email}}):\nSubject: {{subject}}\nMessage: {{message}}",
+      },
+      {
+        key: "payment_confirmation",
+        name: "Payment Confirmation",
+        subject: "Payment Confirmed — Order {{order_number}}",
+        variablesJson: JSON.stringify(["username", "order_number", "amount", "currency"]),
+        htmlBody: `<div style="background-color: #0b0f19; color: #f3f4f6; font-family: sans-serif; padding: 32px; max-width: 600px; margin: 0 auto; border-radius: 12px; border: 1px solid #1f2937;"><h2 style="color: #10b981; margin: 0; font-size: 24px;">PAYMENT CONFIRMED</h2><hr style="border: 0; border-top: 1px solid #1f2937; margin: 20px 0;" /><p>Hello <strong>{{username}}</strong>,</p><p>Your payment of <strong>{{amount}} {{currency}}</strong> for Order <strong>{{order_number}}</strong> has been successfully processed.</p></div>`,
+        textBody: "Hello {{username}},\nPayment of {{amount}} {{currency}} for Order {{order_number}} confirmed.",
+      },
+      {
+        key: "invoice",
+        name: "Official Invoice Issued",
+        subject: "Official Tax Invoice {{invoice_number}} Issued",
+        variablesJson: JSON.stringify(["username", "invoice_number", "amount", "currency"]),
+        htmlBody: `<div style="background-color: #0b0f19; color: #f3f4f6; font-family: sans-serif; padding: 32px; max-width: 600px; margin: 0 auto; border-radius: 12px; border: 1px solid #1f2937;"><h2 style="color: #6366f1;">INVOICE ISSUED</h2><p>Official Tax Invoice <strong>{{invoice_number}}</strong> for total <strong>{{amount}} {{currency}}</strong> has been generated.</p></div>`,
+        textBody: "Official Invoice {{invoice_number}} for {{amount}} {{currency}} has been issued.",
+      },
+      {
+        key: "welcome",
+        name: "Welcome to Mystic Servers",
+        subject: "Welcome to Enterprise NVMe Cloud Infrastructure",
+        variablesJson: JSON.stringify(["username", "frontend_url"]),
+        htmlBody: `<div style="padding:24px; background:#0b0f19; color:#fff;">Welcome {{username}} to Mystic Servers!</div>`,
+        textBody: "Welcome {{username}} to Mystic Servers!",
+      },
+      {
+        key: "vps_provisioned",
+        name: "VPS Server Provisioned",
+        subject: "Your VPS Server {{server_name}} is Ready",
+        variablesJson: JSON.stringify(["username", "server_name", "plan_name"]),
+        htmlBody: `<div style="padding:24px; background:#0b0f19; color:#fff;">Server {{server_name}} ({{plan_name}}) is provisioned!</div>`,
+        textBody: "Server {{server_name}} ({{plan_name}}) is provisioned!",
+      },
+      {
+        key: "vps_suspended",
+        name: "VPS Server Suspended",
+        subject: "Service Notice — Server {{server_name}} Suspended",
+        variablesJson: JSON.stringify(["username", "server_name", "support_email"]),
+        htmlBody: `<div style="padding:24px; background:#0b0f19; color:#fff;">Server {{server_name}} has been suspended.</div>`,
+        textBody: "Server {{server_name}} has been suspended.",
+      },
+      {
+        key: "vps_renewal",
+        name: "VPS Renewal Reminder",
+        subject: "Renewal Notice for Server {{server_name}}",
+        variablesJson: JSON.stringify(["username", "server_name", "amount", "currency"]),
+        htmlBody: `<div style="padding:24px; background:#0b0f19; color:#fff;">Server {{server_name}} renewal due: {{amount}} {{currency}}.</div>`,
+        textBody: "Server {{server_name}} renewal due: {{amount}} {{currency}}.",
+      },
+      {
+        key: "security_alert",
+        name: "Security Alert Notice",
+        subject: "Security Alert — Account Activity Notice",
+        variablesJson: JSON.stringify(["username", "support_email"]),
+        htmlBody: `<div style="padding:24px; background:#0b0f19; color:#fff;">Security alert for account {{username}}.</div>`,
+        textBody: "Security alert for account {{username}}.",
+      },
+    ];
+
+    for (const tpl of defaultTemplates) {
+      await db
+        .insert(emailTemplates)
+        .values({
+          ...tpl,
+          isEnabled: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .onConflictDoNothing({ target: emailTemplates.key });
+    }
+    console.log("  ✓ 11 default email templates initialized (idempotent).");
+
+    console.log("✅ Production plan catalog & email bootstrap seed completed successfully!");
   } catch (err) {
     console.error("❌ Plan seed failed with error:", err);
     process.exitCode = 1;
