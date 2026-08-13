@@ -506,6 +506,417 @@ async function seed() {
       console.log("  ✓ Default Announcement Banner initialized.");
     }
 
+    // CMS Pages & Sections Bootstrap
+    const { cmsPages } = await import("./schema/cms-pages.js");
+    const { cmsSections } = await import("./schema/cms-sections.js");
+
+    const pagesSeedData = [
+      {
+        slug: "home",
+        title: "Official Homepage",
+        description: "Powering Your Next Project. Next-generation virtual compute.",
+        status: "published",
+        sortOrder: 1,
+        seoTitle: "Mystic Servers — Enterprise NVMe Cloud Infrastructure",
+        seoDescription: "High-performance enterprise NVMe cloud VPS hosting, bare-metal dedicated servers, and specialized game infrastructure.",
+        sections: [
+          {
+            type: "hero",
+            title: "Powering Your Next Project.",
+            subtitle: "Next-Generation Virtual Compute",
+            content: "Modern cloud infrastructure built for developers, businesses, gaming communities and creators. Deploy reliable virtual infrastructure with enterprise-grade hardware, transparent pricing and developer-friendly tooling.",
+            configJson: JSON.stringify({ cta: { label: "Deploy VPS", href: "/contact" }, secondaryCta: { label: "View Pricing", href: "/pricing" } }),
+            sortOrder: 1,
+          },
+          {
+            type: "featureGrid",
+            title: "Built For High Performance",
+            subtitle: "Enterprise Hardware Architecture",
+            configJson: JSON.stringify({
+              features: [
+                { title: "Gen4 NVMe Storage", desc: "PCIe 4.0 ultra-low latency NVMe arrays delivering up to 7,000 MB/s read speeds." },
+                { title: "Root Control", desc: "Complete root SSH access with custom ISO uploads and instant server rebuilds." },
+                { title: "BGP Anycast Network", desc: "DDoS protected multi-terabit network routing via global tier-1 transit partners." },
+              ],
+            }),
+            sortOrder: 2,
+          },
+          {
+            type: "stats",
+            title: "Infrastructure Scale & Reliability",
+            configJson: JSON.stringify({
+              stats: [
+                { label: "Uptime SLA", value: "99.99%", description: "Hardware redundancy" },
+                { label: "Global Transit", value: "10 Gbps", description: "Tier-1 BGP routing" },
+                { label: "Deployment Speed", value: "< 60s", description: "Automated provision" },
+                { label: "Support SLA", value: "< 15m", description: "24/7 engineering team" },
+              ],
+            }),
+            sortOrder: 3,
+          },
+          {
+            type: "cta",
+            title: "Ready to Accelerate Your Compute?",
+            content: "Deploy enterprise NVMe instances in under 60 seconds with root SSH access.",
+            configJson: JSON.stringify({ label: "Deploy VPS Now", href: "/contact" }),
+            sortOrder: 4,
+          },
+        ],
+      },
+      {
+        slug: "vps",
+        title: "NVMe Cloud VPS Hosting",
+        description: "High-Performance Enterprise NVMe Virtual Private Servers",
+        status: "published",
+        sortOrder: 2,
+        seoTitle: "NVMe Cloud VPS — Mystic Servers",
+        seoDescription: "Deploy high-throughput virtual private servers with AMD EPYC processors and enterprise NVMe RAID 10 storage.",
+        sections: [
+          {
+            type: "hero",
+            title: "Enterprise NVMe Cloud VPS",
+            subtitle: "High Throughput Virtual Compute",
+            content: "Isolated virtual private servers powered by AMD EPYC processors and enterprise Gen4 NVMe RAID 10 storage arrays.",
+            configJson: JSON.stringify({ cta: { label: "Deploy VPS", href: "/contact" } }),
+            sortOrder: 1,
+          },
+          {
+            type: "pricingSection",
+            title: "VPS Compute Plans & Specs",
+            subtitle: "Select from scalable hourly and monthly compute tiers",
+            configJson: JSON.stringify({
+              plans: [
+                { name: "Developer VPS 1GB", price: "$5.00", period: "/mo", cpu: "1 vCPU Core", ram: "1 GB RAM", storage: "25 GB NVMe", bandwidth: "1 TB Bandwidth", href: "/contact" },
+                { name: "Standard VPS 2GB", price: "$10.00", period: "/mo", cpu: "2 vCPU Cores", ram: "2 GB RAM", storage: "50 GB NVMe", bandwidth: "2 TB Bandwidth", href: "/contact" },
+                { name: "Pro VPS 4GB", price: "$20.00", period: "/mo", cpu: "4 vCPU Cores", ram: "4 GB RAM", storage: "80 GB NVMe", bandwidth: "3 TB Bandwidth", href: "/contact" },
+              ],
+            }),
+            sortOrder: 2,
+          },
+          {
+            type: "featureCards",
+            title: "Key VPS Capabilities",
+            subtitle: "Developer-friendly cloud controls",
+            configJson: JSON.stringify({
+              features: [
+                { title: "Instant Snapshot Backups", desc: "Create point-in-time state snapshots and restore in seconds." },
+                { title: "Dedicated IPv4 & IPv6", desc: "Clean dedicated IP addresses with reverse DNS configuration." },
+                { title: "Custom ISO Uploads", desc: "Boot custom Linux, BSD, or Windows Server distributions." },
+              ],
+            }),
+            sortOrder: 3,
+          },
+        ],
+      },
+      {
+        slug: "products-vps",
+        title: "NVMe Cloud VPS Hosting",
+        description: "High-Performance Enterprise NVMe Virtual Private Servers",
+        status: "published",
+        sortOrder: 2,
+        seoTitle: "NVMe Cloud VPS — Mystic Servers",
+        seoDescription: "Deploy high-throughput virtual private servers with AMD EPYC processors and enterprise NVMe RAID 10 storage.",
+        sections: [
+          {
+            type: "hero",
+            title: "Enterprise NVMe Cloud VPS",
+            subtitle: "High Throughput Virtual Compute",
+            content: "Isolated virtual private servers powered by AMD EPYC processors and enterprise Gen4 NVMe RAID 10 storage arrays.",
+            configJson: JSON.stringify({ cta: { label: "Deploy VPS", href: "/contact" } }),
+            sortOrder: 1,
+          },
+          {
+            type: "pricingSection",
+            title: "VPS Compute Plans & Specs",
+            subtitle: "Select from scalable hourly and monthly compute tiers",
+            configJson: JSON.stringify({
+              plans: [
+                { name: "Developer VPS 1GB", price: "$5.00", period: "/mo", cpu: "1 vCPU Core", ram: "1 GB RAM", storage: "25 GB NVMe", bandwidth: "1 TB Bandwidth", href: "/contact" },
+                { name: "Standard VPS 2GB", price: "$10.00", period: "/mo", cpu: "2 vCPU Cores", ram: "2 GB RAM", storage: "50 GB NVMe", bandwidth: "2 TB Bandwidth", href: "/contact" },
+                { name: "Pro VPS 4GB", price: "$20.00", period: "/mo", cpu: "4 vCPU Cores", ram: "4 GB RAM", storage: "80 GB NVMe", bandwidth: "3 TB Bandwidth", href: "/contact" },
+              ],
+            }),
+            sortOrder: 2,
+          },
+        ],
+      },
+      {
+        slug: "dedicated",
+        title: "Bare-Metal Dedicated Servers",
+        description: "Unthrottled Raw Hardware Compute & Physical Isolation",
+        status: "published",
+        sortOrder: 3,
+        seoTitle: "Dedicated Bare-Metal Servers — Mystic Servers",
+        seoDescription: "Single-tenant bare-metal dedicated servers with IPMI control and 10Gbps unmetered network ports.",
+        sections: [
+          {
+            type: "hero",
+            title: "Bare-Metal Dedicated Infrastructure",
+            subtitle: "Single-Tenant Physical Servers",
+            content: "Raw single-tenant hardware designed for heavy database cluster nodes, virtualization hosts, and demanding enterprise applications.",
+            configJson: JSON.stringify({ cta: { label: "Inquire Dedicated Server", href: "/contact" } }),
+            sortOrder: 1,
+          },
+          {
+            type: "featureGrid",
+            title: "Bare-Metal Hardware Capabilities",
+            subtitle: "No hypervisor overhead",
+            configJson: JSON.stringify({
+              features: [
+                { title: "100% Dedicated Hardware", desc: "No hypervisor overhead, full physical CPU cores and RAM." },
+                { title: "IPMI / Out-of-Band KVM", desc: "Remote IPMI access with virtual media mounting and power control." },
+                { title: "10Gbps Uplinks", desc: "Dedicated unmetered 10Gbps port options with DDoS protection." },
+              ],
+            }),
+            sortOrder: 2,
+          },
+        ],
+      },
+      {
+        slug: "products-dedicated",
+        title: "Bare-Metal Dedicated Servers",
+        description: "Unthrottled Raw Hardware Compute & Physical Isolation",
+        status: "published",
+        sortOrder: 3,
+        seoTitle: "Dedicated Bare-Metal Servers — Mystic Servers",
+        seoDescription: "Single-tenant bare-metal dedicated servers with IPMI control and 10Gbps unmetered network ports.",
+        sections: [
+          {
+            type: "hero",
+            title: "Bare-Metal Dedicated Infrastructure",
+            subtitle: "Single-Tenant Physical Servers",
+            content: "Raw single-tenant hardware designed for heavy database cluster nodes, virtualization hosts, and demanding enterprise applications.",
+            configJson: JSON.stringify({ cta: { label: "Inquire Dedicated Server", href: "/contact" } }),
+            sortOrder: 1,
+          },
+        ],
+      },
+      {
+        slug: "game",
+        title: "Specialized Game Server Hosting",
+        description: "High Clock-Speed Infrastructure Built For Low-Latency Gaming",
+        status: "published",
+        sortOrder: 4,
+        seoTitle: "High-Frequency Game Server Hosting — Mystic Servers",
+        seoDescription: "High-frequency 5.0GHz+ game servers with DDoS protection and Minecraft modpack support.",
+        sections: [
+          {
+            type: "hero",
+            title: "High-Frequency Game Server Hosting",
+            subtitle: "Ultra-Low Ping & High Single-Thread Performance",
+            content: "Powered by 5.0GHz+ high clock speed processors, enterprise NVMe storage, and DDoS protection engineered for game servers.",
+            configJson: JSON.stringify({ cta: { label: "Request Game Node", href: "/contact" } }),
+            sortOrder: 1,
+          },
+          {
+            type: "featureCards",
+            title: "Engineered For Gamers & Communities",
+            subtitle: "Low latency and high tick-rate stability",
+            configJson: JSON.stringify({
+              features: [
+                { title: "5.0 GHz+ CPU Cores", desc: "Maximum single-core clock speeds for tick-rate stability." },
+                { title: "Sub-15ms Latency Routing", desc: "Optimized network routing directly connected to major consumer ISPs." },
+                { title: "Mod & Plugin Manager", desc: "One-click installation of Minecraft Forge, Paper, Spigot, and Steam games." },
+              ],
+            }),
+            sortOrder: 2,
+          },
+        ],
+      },
+      {
+        slug: "products-game",
+        title: "Specialized Game Server Hosting",
+        description: "High Clock-Speed Infrastructure Built For Low-Latency Gaming",
+        status: "published",
+        sortOrder: 4,
+        seoTitle: "High-Frequency Game Server Hosting — Mystic Servers",
+        seoDescription: "High-frequency 5.0GHz+ game servers with DDoS protection and Minecraft modpack support.",
+        sections: [
+          {
+            type: "hero",
+            title: "High-Frequency Game Server Hosting",
+            subtitle: "Ultra-Low Ping & High Single-Thread Performance",
+            content: "Powered by 5.0GHz+ high clock speed processors, enterprise NVMe storage, and DDoS protection engineered for game servers.",
+            configJson: JSON.stringify({ cta: { label: "Request Game Node", href: "/contact" } }),
+            sortOrder: 1,
+          },
+        ],
+      },
+      {
+        slug: "pricing",
+        title: "Transparent Infrastructure Pricing",
+        description: "Simple, Predictable Hourly & Monthly Billing Without Hidden Fees",
+        status: "published",
+        sortOrder: 5,
+        seoTitle: "Transparent Cloud VPS & Infrastructure Pricing — Mystic Servers",
+        seoDescription: "Transparent monthly rates and hourly compute billing for NVMe Cloud VPS and dedicated infrastructure.",
+        sections: [
+          {
+            type: "hero",
+            title: "Transparent Cloud Pricing",
+            subtitle: "Predictable Monthly Rates & Hourly Billing",
+            content: "No hidden bandwidth surcharges or surprise billing. Simple, upfront rates for virtual compute and dedicated resources.",
+            configJson: JSON.stringify({ cta: { label: "Deploy VPS", href: "/contact" } }),
+            sortOrder: 1,
+          },
+          {
+            type: "pricingSection",
+            title: "VPS Compute Plan Comparison",
+            subtitle: "All plans include Gen4 NVMe, full root SSH, and DDoS protection",
+            configJson: JSON.stringify({
+              plans: [
+                { name: "Developer 1GB", price: "$5.00", period: "/mo", cpu: "1 vCPU Core", ram: "1 GB RAM", storage: "25 GB NVMe", bandwidth: "1 TB Bandwidth", href: "/contact" },
+                { name: "Standard 2GB", price: "$10.00", period: "/mo", cpu: "2 vCPU Cores", ram: "2 GB RAM", storage: "50 GB NVMe", bandwidth: "2 TB Bandwidth", href: "/contact" },
+                { name: "Pro 4GB", price: "$20.00", period: "/mo", cpu: "4 vCPU Cores", ram: "4 GB RAM", storage: "80 GB NVMe", bandwidth: "3 TB Bandwidth", href: "/contact" },
+              ],
+            }),
+            sortOrder: 2,
+          },
+        ],
+      },
+      {
+        slug: "status",
+        title: "System Status & Operational Health",
+        description: "Real-Time Network Performance & Datacenter Monitor",
+        status: "published",
+        sortOrder: 6,
+        seoTitle: "System Status & Network Performance — Mystic Servers",
+        seoDescription: "Real-time system telemetry, regional operational status, and uptime metrics.",
+        sections: [
+          {
+            type: "hero",
+            title: "System Status & Operational Health",
+            subtitle: "All Systems Operational (99.99%)",
+            content: "Real-time telemetry and network status for all Mystic Servers global regions and core infrastructure.",
+            configJson: "{}",
+            sortOrder: 1,
+          },
+          {
+            type: "stats",
+            title: "Global Regional Health",
+            configJson: JSON.stringify({
+              stats: [
+                { label: "US-East (N. Virginia)", value: "Operational", description: "0ms outage in 90 days" },
+                { label: "EU-Central (Frankfurt)", value: "Operational", description: "0ms outage in 90 days" },
+                { label: "AP-South (Mumbai)", value: "Operational", description: "0ms outage in 90 days" },
+                { label: "AP-East (Tokyo)", value: "Operational", description: "0ms outage in 90 days" },
+              ],
+            }),
+            sortOrder: 2,
+          },
+        ],
+      },
+      {
+        slug: "knowledge-base",
+        title: "Knowledge Base & Developer Documentation",
+        description: "Technical Guides, API Specifications, & Tutorials",
+        status: "published",
+        sortOrder: 7,
+        seoTitle: "Knowledge Base & Documentation — Mystic Servers",
+        seoDescription: "Developer documentation, API specifications, and Linux server administration guides.",
+        sections: [
+          {
+            type: "hero",
+            title: "Knowledge Base & Engineering Docs",
+            subtitle: "Guides, Tutorials & API Specs",
+            content: "Search technical guides, Linux server administration manuals, network setup tutorials, and cloud API references.",
+            configJson: "{}",
+            sortOrder: 1,
+          },
+          {
+            type: "faq",
+            title: "Popular Documentation Topics",
+            subtitle: "Quick answers to common developer questions",
+            configJson: JSON.stringify({
+              faqs: [
+                { question: "How do I configure SSH key authentication?", answer: "Copy your public SSH key into the dashboard or add it to ~/.ssh/authorized_keys on your cloud instance." },
+                { question: "How do I set up UFW firewall rules?", answer: "Enable UFW by running sudo ufw enable and allow specific ports like sudo ufw allow 22/tcp." },
+              ],
+            }),
+            sortOrder: 2,
+          },
+        ],
+      },
+      {
+        slug: "contact",
+        title: "Contact Engineering & Support",
+        description: "Get In Touch With Engineering & Support",
+        status: "published",
+        sortOrder: 8,
+        seoTitle: "Contact Us — Mystic Servers",
+        seoDescription: "Contact Mystic Servers engineering and support team for custom infrastructure consultations.",
+        sections: [
+          {
+            type: "hero",
+            title: "Get In Touch With Engineering",
+            subtitle: "24/7 Technical Support & Sales",
+            content: "Have questions regarding enterprise deployments, custom VPC subnets, or technical assistance? Contact our team anytime.",
+            configJson: "{}",
+            sortOrder: 1,
+          },
+          {
+            type: "contactForm",
+            title: "Send a Message",
+            subtitle: "Our technical support team typically responds within 15 minutes.",
+            configJson: "{}",
+            sortOrder: 2,
+          },
+        ],
+      },
+    ];
+
+    let seededPagesCount = 0;
+    let seededSectionsCount = 0;
+
+    for (const pageSeed of pagesSeedData) {
+      let [existingPage] = await db
+        .select()
+        .from(cmsPages)
+        .where(eq(cmsPages.slug, pageSeed.slug))
+        .limit(1);
+
+      if (!existingPage) {
+        const [createdPage] = await db
+          .insert(cmsPages)
+          .values({
+            slug: pageSeed.slug,
+            title: pageSeed.title,
+            description: pageSeed.description,
+            status: pageSeed.status,
+            sortOrder: pageSeed.sortOrder,
+            seoTitle: pageSeed.seoTitle,
+            seoDescription: pageSeed.seoDescription,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          })
+          .returning();
+
+        seededPagesCount++;
+
+        if (pageSeed.sections && pageSeed.sections.length > 0) {
+          for (const secData of pageSeed.sections) {
+            await db.insert(cmsSections).values({
+              pageId: createdPage.id,
+              type: secData.type,
+              title: secData.title,
+              subtitle: secData.subtitle,
+              content: secData.content,
+              configJson: secData.configJson || "{}",
+              isEnabled: true,
+              sortOrder: secData.sortOrder,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            });
+            seededSectionsCount++;
+          }
+        }
+      } else {
+        console.log(`  ✓ CMS Page '${pageSeed.slug}' already exists; preserving existing content.`);
+      }
+    }
+
+    console.log(`  ✓ CMS Pages (${seededPagesCount} new) and Sections (${seededSectionsCount} new) initialized.`);
+
     console.log("✅ Production plan catalog, email, and CMS bootstrap seed completed successfully!");
   } catch (err) {
     console.error("❌ Plan seed failed with error:", err);
