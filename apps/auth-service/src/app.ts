@@ -26,6 +26,7 @@ import { registerPlanAdminRoutes } from "./routes/plan-admin.js";
 import { registerIPv4AdminRoutes } from "./routes/ipv4-admin.js";
 import { registerEmailAdminRoutes } from "./routes/email-admin.js";
 import { registerCmsRoutes } from "./routes/cms.js";
+import { registerNotificationRoutes } from "./routes/notifications.js";
 
 const config = loadConfig();
 
@@ -126,6 +127,7 @@ export async function buildApp() {
   await registerIPv4AdminRoutes(app);
   await registerEmailAdminRoutes(app);
   await registerCmsRoutes(app);
+  await registerNotificationRoutes(app);
 
   return app;
 }
