@@ -14,6 +14,7 @@ const planIdParamSchema = z.object({
 });
 
 const createPlanSchema = z.object({
+  productId: z.string().uuid().optional(),
   slug: z.string().min(2).max(50),
   name: z.string().min(2).max(100),
   description: z.string().optional(),
@@ -30,6 +31,8 @@ const createPlanSchema = z.object({
   sortOrder: z.number().int().optional(),
   ipv4Included: z.number().int().min(0).optional(),
   ipv6Available: z.boolean().optional(),
+  ctaLabel: z.string().optional(),
+  ctaDestination: z.string().optional(),
 });
 
 const updatePlanSchema = createPlanSchema.partial();
@@ -50,7 +53,8 @@ export async function listAdminPlansController(
   reply: FastifyReply,
 ) {
   if (!request.user) throw new HttpError(401, "UNAUTHORIZED", "Unauthorized");
-  const result = await listAdminPlansService();
+  const query = (request.query || {}) as { productId?: string; category?: string };
+  const result = await listAdminPlansService(query.productId || query.category);
   return reply.send(result);
 }
 

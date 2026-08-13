@@ -27,6 +27,8 @@ const createProductSchema = z.object({
   icon: z.string().optional(),
   status: z.enum(["active", "disabled", "draft"]).optional(),
   sortOrder: z.number().int().optional(),
+  ctaLabel: z.string().optional(),
+  ctaDestination: z.string().optional(),
 });
 
 const updateProductSchema = createProductSchema.partial();

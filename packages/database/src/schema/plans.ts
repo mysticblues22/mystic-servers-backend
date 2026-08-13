@@ -42,6 +42,11 @@ export const plans = pgTable("plans", {
 
   ipv6Available: boolean("ipv6_available").default(true).notNull(),
 
+  // CTA Customization
+  ctaLabel: varchar("cta_label", { length: 100 }).default("Deploy VPS").notNull(),
+
+  ctaDestination: varchar("cta_destination", { length: 255 }).default("/contact").notNull(),
+
   // International USD Pricing (in minor unit cents)
   monthlyPriceCents: bigint("monthly_price_cents", { mode: "number" }).notNull(),
 

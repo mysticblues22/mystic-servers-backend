@@ -3,8 +3,12 @@ import { planRepository } from "@mystic/database";
 import { HttpError } from "../../errors/http-error.js";
 import { resolvePlanPrice } from "../currency/currency.service.js";
 
-export async function getPublicPlansService(currency: string = "USD", region: string = "INTL") {
-  const rawPlans = await planRepository.findAllActive();
+export async function getPublicPlansService(
+  currency: string = "USD",
+  region: string = "INTL",
+  productSlug?: string,
+) {
+  const rawPlans = await planRepository.findAllActive(productSlug);
 
   const plans = rawPlans.map((plan) => {
     const monthlyPrice = resolvePlanPrice(plan, "monthly", currency, region);
@@ -22,7 +26,11 @@ export async function getPublicPlansService(currency: string = "USD", region: st
   return { plans };
 }
 
-export async function getPlanByIdService(id: string, currency: string = "USD", region: string = "INTL") {
+export async function getPlanByIdService(
+  id: string,
+  currency: string = "USD",
+  region: string = "INTL",
+) {
   const plan = await planRepository.findById(id);
 
   if (!plan) {
@@ -43,7 +51,11 @@ export async function getPlanByIdService(id: string, currency: string = "USD", r
   };
 }
 
-export async function getPlanBySlugService(slug: string, currency: string = "USD", region: string = "INTL") {
+export async function getPlanBySlugService(
+  slug: string,
+  currency: string = "USD",
+  region: string = "INTL",
+) {
   const plan = await planRepository.findBySlug(slug);
 
   if (!plan) {

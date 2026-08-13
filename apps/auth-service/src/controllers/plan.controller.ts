@@ -13,6 +13,8 @@ import {
 interface PricingQuery {
   currency?: string;
   region?: string;
+  category?: string;
+  productSlug?: string;
 }
 
 export async function listPlansController(
@@ -20,7 +22,8 @@ export async function listPlansController(
   reply: FastifyReply,
 ) {
   const query = request.query || {};
-  const result = await getPublicPlansService(query.currency, query.region);
+  const productSlug = query.productSlug || query.category;
+  const result = await getPublicPlansService(query.currency, query.region, productSlug);
   return reply.send(result);
 }
 

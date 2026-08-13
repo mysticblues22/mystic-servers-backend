@@ -3,7 +3,9 @@ import {
   plans,
   regionalPrices,
   auditLogs,
+  products,
   eq,
+  and,
   asc,
 } from "@mystic/database";
 import { HttpError } from "../../errors/http-error.js";
@@ -11,7 +13,25 @@ import { HttpError } from "../../errors/http-error.js";
 const SUPPORTED_REGIONS = ["IN", "US", "EU", "UK", "JP"];
 const SUPPORTED_CURRENCIES = ["INR", "USD", "EUR", "GBP", "JPY"];
 
-export async function listAdminPlansService() {
+export async function listAdminPlansService(filterProductIdOrSlug?: string) {
+  if (filterProductIdOrSlug) {
+    // Check if UUID or product slug
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(filterProductIdOrSlug);
+    let targetProductId = filterProductIdOrSlug;
+    if (!isUuid) {
+      const [prod] = await db.select().from(products).where(eq(products.slug, filterProductIdOrSlug)).limit(1);
+      if (prod) targetProductId = prod.id;
+    }
+
+    const filteredPlans = await db
+      .select()
+      .from(plans)
+      .where(eq(plans.productId, targetProductId))
+      .orderBy(asc(plans.sortOrder));
+
+    return { plans: filteredPlans };
+  }
+
   const allPlans = await db
     .select()
     .from(plans)
@@ -43,6 +63,7 @@ export async function getPlanByIdService(planId: string) {
 export async function createAdminPlanService(
   adminUserId: string,
   input: {
+    productId?: string;
     slug: string;
     name: string;
     description?: string;
@@ -59,6 +80,8 @@ export async function createAdminPlanService(
     sortOrder?: number;
     ipv4Included?: number;
     ipv6Available?: boolean;
+    ctaLabel?: string;
+    ctaDestination?: string;
   },
 ) {
   if (input.monthlyPriceCents < 0 || input.annualPriceCents < 0) {
@@ -78,6 +101,7 @@ export async function createAdminPlanService(
   const [newPlan] = await db
     .insert(plans)
     .values({
+      productId: input.productId || null,
       slug: input.slug.toLowerCase().trim(),
       name: input.name.trim(),
       description: input.description || null,
@@ -94,6 +118,8 @@ export async function createAdminPlanService(
       sortOrder: input.sortOrder || 0,
       ipv4Included: input.ipv4Included ?? 1,
       ipv6Available: input.ipv6Available ?? true,
+      ctaLabel: input.ctaLabel || "Deploy VPS",
+      ctaDestination: input.ctaDestination || "/contact",
       createdAt: new Date(),
       updatedAt: new Date(),
     })
@@ -116,6 +142,7 @@ export async function updateAdminPlanService(
   planId: string,
   adminUserId: string,
   input: {
+    productId?: string;
     name?: string;
     description?: string;
     cpuCores?: number;
@@ -130,6 +157,8 @@ export async function updateAdminPlanService(
     sortOrder?: number;
     ipv4Included?: number;
     ipv6Available?: boolean;
+    ctaLabel?: string;
+    ctaDestination?: string;
   },
 ) {
   const [existing] = await db
@@ -152,6 +181,7 @@ export async function updateAdminPlanService(
   const [updatedPlan] = await db
     .update(plans)
     .set({
+      ...(input.productId !== undefined ? { productId: input.productId } : {}),
       ...(input.name ? { name: input.name.trim() } : {}),
       ...(input.description !== undefined ? { description: input.description } : {}),
       ...(input.cpuCores !== undefined ? { cpuCores: input.cpuCores } : {}),
@@ -166,6 +196,8 @@ export async function updateAdminPlanService(
       ...(input.sortOrder !== undefined ? { sortOrder: input.sortOrder } : {}),
       ...(input.ipv4Included !== undefined ? { ipv4Included: input.ipv4Included } : {}),
       ...(input.ipv6Available !== undefined ? { ipv6Available: input.ipv6Available } : {}),
+      ...(input.ctaLabel !== undefined ? { ctaLabel: input.ctaLabel } : {}),
+      ...(input.ctaDestination !== undefined ? { ctaDestination: input.ctaDestination } : {}),
       updatedAt: new Date(),
     })
     .where(eq(plans.id, planId))

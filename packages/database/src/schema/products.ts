@@ -35,6 +35,10 @@ export const products = pgTable("products", {
 
   sortOrder: integer("sort_order").default(0).notNull(),
 
+  ctaLabel: varchar("cta_label", { length: 100 }).default("Explore Catalog").notNull(),
+
+  ctaDestination: varchar("cta_destination", { length: 255 }).default("/contact").notNull(),
+
   createdAt: timestamp("created_at", {
     withTimezone: true,
   })

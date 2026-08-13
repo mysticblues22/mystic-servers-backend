@@ -1,4 +1,4 @@
-import { db, products, plans, regionalPrices, eq, asc, desc } from "@mystic/database";
+import { db, products, plans, regionalPrices, eq, and, asc, desc } from "@mystic/database";
 import { HttpError } from "../../errors/http-error.js";
 
 export async function listPublicProductsService() {
@@ -22,12 +22,12 @@ export async function getProductBySlugService(slug: string) {
     throw new HttpError(404, "PRODUCT_NOT_FOUND", `Product '${slug}' not found`);
   }
 
-  // Fetch associated plans if product is active
+  // Fetch plans belonging specifically to this product ID
   const productPlans = await db
     .select()
     .from(plans)
-    .where(eq(plans.status, "active"))
-    .orderBy(asc(plans.sortOrder));
+    .where(and(eq(plans.status, "active"), eq(plans.productId, product.id)))
+    .orderBy(asc(plans.sortOrder), asc(plans.monthlyPriceCents));
 
   return { product, plans: productPlans };
 }
@@ -52,6 +52,8 @@ export async function createProductService(input: {
   icon?: string;
   status?: "active" | "disabled" | "draft";
   sortOrder?: number;
+  ctaLabel?: string;
+  ctaDestination?: string;
 }) {
   const [existing] = await db
     .select()
@@ -75,6 +77,8 @@ export async function createProductService(input: {
       icon: input.icon || "Server",
       status: input.status || "disabled",
       sortOrder: input.sortOrder || 0,
+      ctaLabel: input.ctaLabel || "Explore Catalog",
+      ctaDestination: input.ctaDestination || "/contact",
       createdAt: new Date(),
       updatedAt: new Date(),
     })
@@ -94,6 +98,8 @@ export async function updateProductService(
     icon?: string;
     status?: "active" | "disabled" | "draft";
     sortOrder?: number;
+    ctaLabel?: string;
+    ctaDestination?: string;
   },
 ) {
   const [existing] = await db
@@ -117,6 +123,8 @@ export async function updateProductService(
       ...(input.icon ? { icon: input.icon } : {}),
       ...(input.status ? { status: input.status } : {}),
       ...(input.sortOrder !== undefined ? { sortOrder: input.sortOrder } : {}),
+      ...(input.ctaLabel !== undefined ? { ctaLabel: input.ctaLabel } : {}),
+      ...(input.ctaDestination !== undefined ? { ctaDestination: input.ctaDestination } : {}),
       updatedAt: new Date(),
     })
     .where(eq(products.id, productId))
