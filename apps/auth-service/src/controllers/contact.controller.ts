@@ -1,5 +1,6 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
+import { db, contactInquiries } from "@mystic/database";
 import { emailService } from "../services/email/email.service.js";
 
 const contactSchema = z.object({
@@ -15,6 +16,17 @@ export async function submitContactController(
 ) {
   const body = contactSchema.parse(request.body);
   const ticketId = `TKT-${Date.now().toString(36).toUpperCase()}`;
+
+  // Store Inquiry in Database
+  await db.insert(contactInquiries).values({
+    ticketId,
+    name: body.name,
+    email: body.email,
+    subject: body.subject,
+    message: body.message,
+    status: "open",
+    createdAt: new Date(),
+  });
 
   request.log.info({ contact: body, ticketId }, "Received customer contact request");
 
@@ -32,6 +44,7 @@ export async function submitContactController(
     message: "Thank you. Your message has been received and logged.",
     data: {
       id: ticketId,
+      ticketId,
       receivedAt: new Date().toISOString(),
     },
   });

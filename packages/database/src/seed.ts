@@ -217,7 +217,7 @@ async function seed() {
 
     // Admin promotion for designated administrative account
     const { users } = await import("./schema/users.js");
-    const { eq } = await import("drizzle-orm");
+    const { eq, and } = await import("drizzle-orm");
     await db.update(users).set({ role: "admin" }).where(eq(users.email, "rdhanush07@gmail.com"));
     console.log("  ✓ Admin role verified/promoted for rdhanush07@gmail.com");
 
@@ -276,8 +276,8 @@ async function seed() {
           smtpFrom,
           supportEmail,
           emailsEnabled: true,
-          dailyLimit: 80,
-          monthlyLimit: 2500,
+          dailyLimit: 0,
+          monthlyLimit: 0,
           createdAt: new Date(),
           updatedAt: new Date(),
         });
@@ -392,7 +392,121 @@ async function seed() {
     }
     console.log("  ✓ 11 default email templates initialized (idempotent).");
 
-    console.log("✅ Production plan catalog & email bootstrap seed completed successfully!");
+    // CMS Site Settings Bootstrap
+    const { siteSettings } = await import("./schema/site-settings.js");
+    const [existingSite] = await db.select().from(siteSettings).limit(1);
+    if (!existingSite) {
+      await db.insert(siteSettings).values({
+        companyName: "Mystic Servers",
+        logoUrl: "/brand/logo.png",
+        faviconUrl: "/brand/favicon/favicon.ico",
+        tagline: "Powering Your Next Project.",
+        description: "High-performance enterprise NVMe cloud VPS hosting, bare-metal dedicated servers, and specialized game infrastructure.",
+        supportEmail: "support@mysticservers.com",
+        salesEmail: "sales@mysticservers.com",
+        pressEmail: "press@mysticservers.com",
+        statusState: "operational",
+        statusMessage: "All Systems Operational (99.99%)",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      console.log("  ✓ CMS Site Settings initialized.");
+    } else {
+      console.log("  ✓ CMS Site Settings already exists.");
+    }
+
+    // CMS Navigation Bootstrap
+    const { navigationMenus } = await import("./schema/navigation-menus.js");
+    const { navigationItems } = await import("./schema/navigation-items.js");
+
+    const menusData = [
+      { name: "Header Main Menu", slug: "header" },
+      { name: "Footer Products", slug: "footer_products" },
+      { name: "Footer Resources", slug: "footer_resources" },
+    ];
+
+    for (const mData of menusData) {
+      let [menu] = await db.select().from(navigationMenus).where(eq(navigationMenus.slug, mData.slug)).limit(1);
+      if (!menu) {
+        [menu] = await db.insert(navigationMenus).values(mData).returning();
+      }
+
+      if (mData.slug === "header") {
+        const headerItems = [
+          { label: "Cloud VPS", href: "/products/vps", sortOrder: 1, actionType: "internal" },
+          { label: "Dedicated", href: "/products/dedicated", sortOrder: 2, actionType: "internal" },
+          { label: "Game Hosting", href: "/products/game", sortOrder: 3, actionType: "internal" },
+          { label: "Pricing", href: "/pricing", sortOrder: 4, actionType: "internal" },
+          { label: "Status", href: "/status", sortOrder: 5, actionType: "internal" },
+          { label: "Docs", href: "/knowledge-base", sortOrder: 6, actionType: "internal" },
+        ];
+        for (const item of headerItems) {
+          const [itemExists] = await db
+            .select()
+            .from(navigationItems)
+            .where(and(eq(navigationItems.menuId, menu.id), eq(navigationItems.href, item.href)))
+            .limit(1);
+          if (!itemExists) {
+            await db.insert(navigationItems).values({ ...item, menuId: menu.id, isEnabled: true });
+          }
+        }
+      } else if (mData.slug === "footer_products") {
+        const prodItems = [
+          { label: "NVMe Cloud VPS", href: "/products/vps", sortOrder: 1 },
+          { label: "Minecraft Hosting", href: "/products/game", sortOrder: 2 },
+          { label: "Dedicated Servers", href: "/products/dedicated", sortOrder: 3 },
+          { label: "DDoS Protection", href: "/products/vps", sortOrder: 4 },
+          { label: "Cloud Hosting", href: "/products/cloud", sortOrder: 5 },
+        ];
+        for (const item of prodItems) {
+          const [itemExists] = await db
+            .select()
+            .from(navigationItems)
+            .where(and(eq(navigationItems.menuId, menu.id), eq(navigationItems.href, item.href)))
+            .limit(1);
+          if (!itemExists) {
+            await db.insert(navigationItems).values({ ...item, menuId: menu.id, isEnabled: true });
+          }
+        }
+      } else if (mData.slug === "footer_resources") {
+        const resItems = [
+          { label: "Documentation", href: "/knowledge-base", sortOrder: 1 },
+          { label: "API Reference", href: "/knowledge-base", sortOrder: 2 },
+          { label: "System Status", href: "/status", sortOrder: 3 },
+          { label: "Community Discord", href: "https://discord.gg/mysticservers", actionType: "external", sortOrder: 4 },
+          { label: "Knowledge Base", href: "/knowledge-base", sortOrder: 5 },
+        ];
+        for (const item of resItems) {
+          const [itemExists] = await db
+            .select()
+            .from(navigationItems)
+            .where(and(eq(navigationItems.menuId, menu.id), eq(navigationItems.label, item.label)))
+            .limit(1);
+          if (!itemExists) {
+            await db.insert(navigationItems).values({ ...item, menuId: menu.id, isEnabled: true });
+          }
+        }
+      }
+    }
+    console.log("  ✓ CMS Navigation Menus & Items initialized.");
+
+    // CMS Announcements Bootstrap
+    const { announcements } = await import("./schema/announcements.js");
+    const [annExists] = await db.select().from(announcements).limit(1);
+    if (!annExists) {
+      await db.insert(announcements).values({
+        title: "Next-Gen Infrastructure Launch",
+        message: "High-performance enterprise NVMe Gen4 instances now live in all global datacenter regions.",
+        type: "info",
+        link: "/products/vps",
+        linkLabel: "Explore VPS Plans",
+        isEnabled: true,
+        priority: 1,
+      });
+      console.log("  ✓ Default Announcement Banner initialized.");
+    }
+
+    console.log("✅ Production plan catalog, email, and CMS bootstrap seed completed successfully!");
   } catch (err) {
     console.error("❌ Plan seed failed with error:", err);
     process.exitCode = 1;

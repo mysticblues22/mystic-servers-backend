@@ -55,9 +55,7 @@ export async function getProviderInstance(): Promise<{
   from: string;
   supportEmail: string;
   emailsEnabled: boolean;
-  dailyLimitEnabled: boolean;
   dailyLimit: number;
-  monthlyLimitEnabled: boolean;
   monthlyLimit: number;
   unconfiguredReason?: string;
 }> {
@@ -71,9 +69,7 @@ export async function getProviderInstance(): Promise<{
         from: settings.smtpFrom,
         supportEmail: settings.supportEmail,
         emailsEnabled: false,
-        dailyLimitEnabled: settings.dailyLimitEnabled,
         dailyLimit: settings.dailyLimit,
-        monthlyLimitEnabled: settings.monthlyLimitEnabled,
         monthlyLimit: settings.monthlyLimit,
         unconfiguredReason: "GLOBAL_KILL_SWITCH_ACTIVE",
       };
@@ -94,9 +90,7 @@ export async function getProviderInstance(): Promise<{
         from: settings.smtpFrom,
         supportEmail: settings.supportEmail,
         emailsEnabled: true,
-        dailyLimitEnabled: settings.dailyLimitEnabled,
         dailyLimit: settings.dailyLimit,
-        monthlyLimitEnabled: settings.monthlyLimitEnabled,
         monthlyLimit: settings.monthlyLimit,
       };
     } catch (err: any) {
@@ -105,9 +99,7 @@ export async function getProviderInstance(): Promise<{
         from: settings.smtpFrom,
         supportEmail: settings.supportEmail,
         emailsEnabled: true,
-        dailyLimitEnabled: settings.dailyLimitEnabled,
         dailyLimit: settings.dailyLimit,
-        monthlyLimitEnabled: settings.monthlyLimitEnabled,
         monthlyLimit: settings.monthlyLimit,
         unconfiguredReason: `DECRYPTION_ERROR: ${err?.message}`,
       };
@@ -131,10 +123,8 @@ export async function getProviderInstance(): Promise<{
       from,
       supportEmail,
       emailsEnabled: true,
-      dailyLimitEnabled: false,
-      dailyLimit: 80,
-      monthlyLimitEnabled: false,
-      monthlyLimit: 2500,
+      dailyLimit: 0,
+      monthlyLimit: 0,
     };
   }
 
@@ -143,10 +133,8 @@ export async function getProviderInstance(): Promise<{
     from: "Mystic Servers <noreply@mysticservers.com>",
     supportEmail: "support@mysticservers.com",
     emailsEnabled: true,
-    dailyLimitEnabled: false,
-    dailyLimit: 80,
-    monthlyLimitEnabled: false,
-    monthlyLimit: 2500,
+    dailyLimit: 0,
+    monthlyLimit: 0,
     unconfiguredReason: "NO_SMTP_CREDENTIALS_CONFIGURED",
   };
 }
@@ -218,8 +206,8 @@ export async function processEmailQueue() {
         continue;
       }
 
-      // Check daily rate limits ONLY if dailyLimitEnabled is explicitly set to true
-      if (config.dailyLimitEnabled) {
+      // Check daily rate limits ONLY if dailyLimit > 0
+      if (config.dailyLimit > 0) {
         const startOfDay = new Date();
         startOfDay.setHours(0, 0, 0, 0);
 
