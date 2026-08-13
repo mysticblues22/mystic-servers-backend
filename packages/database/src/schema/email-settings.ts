@@ -29,7 +29,11 @@ export const emailSettings = pgTable("email_settings", {
 
   emailsEnabled: boolean("emails_enabled").default(true).notNull(),
 
+  dailyLimitEnabled: boolean("daily_limit_enabled").default(false).notNull(),
+
   dailyLimit: integer("daily_limit").default(80).notNull(),
+
+  monthlyLimitEnabled: boolean("monthly_limit_enabled").default(false).notNull(),
 
   monthlyLimit: integer("monthly_limit").default(2500).notNull(),
 

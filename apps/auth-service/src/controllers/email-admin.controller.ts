@@ -22,7 +22,9 @@ const updateSettingsSchema = z.object({
   smtpFrom: z.string().optional(),
   supportEmail: z.string().email().optional(),
   emailsEnabled: z.boolean().optional(),
+  dailyLimitEnabled: z.boolean().optional(),
   dailyLimit: z.number().int().min(1).optional(),
+  monthlyLimitEnabled: z.boolean().optional(),
   monthlyLimit: z.number().int().min(1).optional(),
 });
 

@@ -55,7 +55,9 @@ export async function getProviderInstance(): Promise<{
   from: string;
   supportEmail: string;
   emailsEnabled: boolean;
+  dailyLimitEnabled: boolean;
   dailyLimit: number;
+  monthlyLimitEnabled: boolean;
   monthlyLimit: number;
   unconfiguredReason?: string;
 }> {
@@ -69,7 +71,9 @@ export async function getProviderInstance(): Promise<{
         from: settings.smtpFrom,
         supportEmail: settings.supportEmail,
         emailsEnabled: false,
+        dailyLimitEnabled: settings.dailyLimitEnabled,
         dailyLimit: settings.dailyLimit,
+        monthlyLimitEnabled: settings.monthlyLimitEnabled,
         monthlyLimit: settings.monthlyLimit,
         unconfiguredReason: "GLOBAL_KILL_SWITCH_ACTIVE",
       };
@@ -90,7 +94,9 @@ export async function getProviderInstance(): Promise<{
         from: settings.smtpFrom,
         supportEmail: settings.supportEmail,
         emailsEnabled: true,
+        dailyLimitEnabled: settings.dailyLimitEnabled,
         dailyLimit: settings.dailyLimit,
+        monthlyLimitEnabled: settings.monthlyLimitEnabled,
         monthlyLimit: settings.monthlyLimit,
       };
     } catch (err: any) {
@@ -99,7 +105,9 @@ export async function getProviderInstance(): Promise<{
         from: settings.smtpFrom,
         supportEmail: settings.supportEmail,
         emailsEnabled: true,
+        dailyLimitEnabled: settings.dailyLimitEnabled,
         dailyLimit: settings.dailyLimit,
+        monthlyLimitEnabled: settings.monthlyLimitEnabled,
         monthlyLimit: settings.monthlyLimit,
         unconfiguredReason: `DECRYPTION_ERROR: ${err?.message}`,
       };
@@ -123,7 +131,9 @@ export async function getProviderInstance(): Promise<{
       from,
       supportEmail,
       emailsEnabled: true,
+      dailyLimitEnabled: false,
       dailyLimit: 80,
+      monthlyLimitEnabled: false,
       monthlyLimit: 2500,
     };
   }
@@ -133,7 +143,9 @@ export async function getProviderInstance(): Promise<{
     from: "Mystic Servers <noreply@mysticservers.com>",
     supportEmail: "support@mysticservers.com",
     emailsEnabled: true,
+    dailyLimitEnabled: false,
     dailyLimit: 80,
+    monthlyLimitEnabled: false,
     monthlyLimit: 2500,
     unconfiguredReason: "NO_SMTP_CREDENTIALS_CONFIGURED",
   };
@@ -206,31 +218,33 @@ export async function processEmailQueue() {
         continue;
       }
 
-      // Check daily rate limits
-      const startOfDay = new Date();
-      startOfDay.setHours(0, 0, 0, 0);
+      // Check daily rate limits ONLY if dailyLimitEnabled is explicitly set to true
+      if (config.dailyLimitEnabled) {
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
 
-      const [dailySentCount] = await db
-        .select({ count: sql<number>`count(*)::int` })
-        .from(emailQueue)
-        .where(and(eq(emailQueue.status, "SENT"), gte(emailQueue.sentAt, startOfDay)));
+        const [dailySentCount] = await db
+          .select({ count: sql<number>`count(*)::int` })
+          .from(emailQueue)
+          .where(and(eq(emailQueue.status, "SENT"), gte(emailQueue.sentAt, startOfDay)));
 
-      if ((dailySentCount?.count || 0) >= config.dailyLimit) {
-        await db
-          .update(emailQueue)
-          .set({ status: "RATE_LIMITED", lastError: `Daily rate limit of ${config.dailyLimit} reached`, updatedAt: new Date() })
-          .where(eq(emailQueue.id, job.id));
+        if ((dailySentCount?.count || 0) >= config.dailyLimit) {
+          await db
+            .update(emailQueue)
+            .set({ status: "RATE_LIMITED", lastError: `Daily rate limit of ${config.dailyLimit} reached`, updatedAt: new Date() })
+            .where(eq(emailQueue.id, job.id));
 
-        await db.insert(emailLogs).values({
-          recipient: job.recipient,
-          templateKey: job.templateKey,
-          subject: job.subject,
-          provider: config.provider.name,
-          status: "RATE_LIMITED",
-          errorMessage: `Daily rate limit of ${config.dailyLimit} reached`,
-          createdAt: new Date(),
-        });
-        continue;
+          await db.insert(emailLogs).values({
+            recipient: job.recipient,
+            templateKey: job.templateKey,
+            subject: job.subject,
+            provider: config.provider.name,
+            status: "RATE_LIMITED",
+            errorMessage: `Daily rate limit of ${config.dailyLimit} reached`,
+            createdAt: new Date(),
+          });
+          continue;
+        }
       }
 
       // Lock job into SENDING state

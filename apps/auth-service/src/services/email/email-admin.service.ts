@@ -85,7 +85,9 @@ export async function getEmailDashboardService() {
           smtpFrom: settings.smtpFrom,
           supportEmail: settings.supportEmail,
           emailsEnabled: settings.emailsEnabled,
+          dailyLimitEnabled: settings.dailyLimitEnabled,
           dailyLimit: settings.dailyLimit,
+          monthlyLimitEnabled: settings.monthlyLimitEnabled,
           monthlyLimit: settings.monthlyLimit,
           isConfigured: !!(settings.smtpHost && settings.smtpUser && settings.encryptedSmtpPass),
         }
@@ -98,7 +100,9 @@ export async function getEmailDashboardService() {
           smtpFrom: process.env.SMTP_FROM || "Mystic Servers <noreply@mysticservers.com>",
           supportEmail: process.env.SUPPORT_EMAIL || "support@mysticservers.com",
           emailsEnabled: true,
+          dailyLimitEnabled: false,
           dailyLimit: 80,
+          monthlyLimitEnabled: false,
           monthlyLimit: 2500,
           isConfigured: !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS),
         },
@@ -127,7 +131,9 @@ export async function updateEmailSettingsService(
     smtpFrom?: string;
     supportEmail?: string;
     emailsEnabled?: boolean;
+    dailyLimitEnabled?: boolean;
     dailyLimit?: number;
+    monthlyLimitEnabled?: boolean;
     monthlyLimit?: number;
   },
 ) {
@@ -152,7 +158,9 @@ export async function updateEmailSettingsService(
         ...(input.smtpFrom !== undefined ? { smtpFrom: input.smtpFrom } : {}),
         ...(input.supportEmail !== undefined ? { supportEmail: input.supportEmail } : {}),
         ...(input.emailsEnabled !== undefined ? { emailsEnabled: input.emailsEnabled } : {}),
+        ...(input.dailyLimitEnabled !== undefined ? { dailyLimitEnabled: input.dailyLimitEnabled } : {}),
         ...(input.dailyLimit !== undefined ? { dailyLimit: input.dailyLimit } : {}),
+        ...(input.monthlyLimitEnabled !== undefined ? { monthlyLimitEnabled: input.monthlyLimitEnabled } : {}),
         ...(input.monthlyLimit !== undefined ? { monthlyLimit: input.monthlyLimit } : {}),
         updatedAt: new Date(),
       })
