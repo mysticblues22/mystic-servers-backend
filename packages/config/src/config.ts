@@ -1,6 +1,16 @@
+import dotenv from "dotenv";
+import fs from "node:fs";
+import path from "node:path";
 import { envSchema } from "./schema.js";
 
 export function loadConfig() {
+  const localEnvPath = path.resolve(process.cwd(), ".env");
+  if (fs.existsSync(localEnvPath)) {
+    dotenv.config({ path: localEnvPath });
+  } else {
+    dotenv.config();
+  }
+
   const parsed = envSchema.safeParse(process.env);
 
   if (!parsed.success) {
