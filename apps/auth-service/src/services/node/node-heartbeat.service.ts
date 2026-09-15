@@ -71,9 +71,9 @@ export async function processNodeHeartbeatService(
     status: targetStatus,
     agentVersion,
     capabilities,
-    totalCpuCores,
-    totalRamMb,
-    totalDiskGb,
+    totalCpuCores: Math.round(totalCpuCores),
+    totalRamMb: Math.round(totalRamMb),
+    totalDiskGb: Math.round(totalDiskGb),
   });
 
   const availableCpuCores = Math.max(0, (updatedNode?.totalCpuCores || 0) - (updatedNode?.allocatedCpuCores || 0));
