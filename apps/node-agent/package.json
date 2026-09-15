@@ -1,5 +1,5 @@
 {
-  "name": "@mystic/auth-service",
+  "name": "@mystic/node-agent",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -11,22 +11,15 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@fastify/cookie": "^11.0.0",
     "@fastify/cors": "^10.0.0",
-    "@fastify/rate-limit": "^10.0.0",
-    "@mystic/auth": "workspace:*",
     "@mystic/bootstrap": "workspace:*",
     "@mystic/config": "workspace:*",
     "@mystic/core": "workspace:*",
-    "@mystic/database": "workspace:*",
     "@mystic/logger": "workspace:*",
     "fastify": "^5.11.3",
-    "nodemailer": "^6.9.16",
-    "razorpay": "^2.9.8",
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@types/node": "^26.2.0",
-    "@types/nodemailer": "^6.4.17"
+    "@types/node": "^26.2.0"
   }
 }

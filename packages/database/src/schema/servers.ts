@@ -8,6 +8,7 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 
+import { nodes } from "./nodes.js";
 import { plans } from "./plans.js";
 import { users } from "./users.js";
 
@@ -39,11 +40,20 @@ export const servers = pgTable(
         onDelete: "restrict",
       }),
 
+    nodeId: uuid("node_id").references(() => nodes.id, {
+      onDelete: "set null",
+    }),
+
     name: varchar("name", { length: 100 }).notNull(),
 
     hostname: varchar("hostname", { length: 255 }),
 
     region: varchar("region", { length: 50 }).notNull(),
+
+    // Hypervisor / Provider Reference
+    provider: varchar("provider", { length: 50 }), // e.g. "incus", "kvm"
+
+    providerInstanceId: varchar("provider_instance_id", { length: 255 }),
 
     // Resource Snapshots (Immutable server specifications)
     cpuCores: integer("cpu_cores").notNull(),
@@ -73,6 +83,7 @@ export const servers = pgTable(
   },
   (table) => ({
     userIdIdx: index("servers_user_id_idx").on(table.userId),
+    nodeIdIdx: index("servers_node_id_idx").on(table.nodeId),
     statusIdx: index("servers_status_idx").on(table.status),
   }),
 );

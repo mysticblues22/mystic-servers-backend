@@ -5,3 +5,4 @@ export * from "./plan.repository.js";
 export * from "./order.repository.js";
 export * from "./payment.repository.js";
 export * from "./invoice.repository.js";
+export * from "./node.repository.js";

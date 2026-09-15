@@ -4,8 +4,12 @@ import {
   invoices,
   orders,
   announcements,
+  notificationReads,
   desc,
   eq,
+  and,
+  inArray,
+  sql,
 } from "@mystic/database";
 
 export interface NotificationItemDTO {
@@ -19,7 +23,12 @@ export interface NotificationItemDTO {
   link?: string;
 }
 
-export async function getNotificationsService(): Promise<{
+/**
+ * Returns notifications for a specific user (admin only for now).
+ * Filters out any notification whose key exists in notification_reads for this user.
+ * Only genuinely unread notifications are returned.
+ */
+export async function getNotificationsService(userId?: string): Promise<{
   notifications: NotificationItemDTO[];
   unreadCount: number;
 }> {
@@ -106,7 +115,7 @@ export async function getNotificationsService(): Promise<{
         title: ann.title,
         description: ann.message,
         category: "Announcements",
-        time: "Active Announcement",
+        time: formatRelativeTime(ann.createdAt),
         timestamp: new Date(ann.createdAt).getTime(),
         unread: false,
         link: ann.link || "/products/vps",
@@ -117,12 +126,73 @@ export async function getNotificationsService(): Promise<{
   // Sort all notifications by timestamp descending
   items.sort((a, b) => b.timestamp - a.timestamp);
 
+  // Filter out notifications already read by this user (if userId provided)
+  if (userId && items.length > 0) {
+    try {
+      const keys = items.map((i) => i.id);
+      const readRows = await db
+        .select({ notificationKey: notificationReads.notificationKey })
+        .from(notificationReads)
+        .where(
+          and(
+            eq(notificationReads.userId, userId),
+            inArray(notificationReads.notificationKey, keys),
+          ),
+        );
+      const readSet = new Set(readRows.map((r) => r.notificationKey));
+
+      // Remove notifications that the user has already read
+      const unread = items.filter((item) => !readSet.has(item.id));
+      const unreadCount = unread.filter((item) => item.unread).length;
+
+      return {
+        notifications: unread,
+        unreadCount,
+      };
+    } catch {}
+  }
+
   const unreadCount = items.filter((item) => item.unread).length;
 
   return {
     notifications: items,
     unreadCount,
   };
+}
+
+/**
+ * Marks a single notification as read for a user.
+ * Idempotent — safe to call multiple times.
+ */
+export async function markNotificationReadService(
+  userId: string,
+  notificationKey: string,
+): Promise<void> {
+  await db
+    .insert(notificationReads)
+    .values({ userId, notificationKey })
+    .onConflictDoNothing();
+}
+
+/**
+ * Marks ALL currently visible notifications as read for a user.
+ * Inserts a read record for every notification key returned by getNotificationsService.
+ */
+export async function markAllNotificationsReadService(
+  userId: string,
+): Promise<void> {
+  const { notifications } = await getNotificationsService();
+  if (notifications.length === 0) return;
+
+  const values = notifications.map((n) => ({
+    userId,
+    notificationKey: n.id,
+  }));
+
+  await db
+    .insert(notificationReads)
+    .values(values)
+    .onConflictDoNothing();
 }
 
 function formatRelativeTime(dateInput: Date | string): string {

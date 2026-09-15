@@ -62,9 +62,43 @@ importers:
       fastify:
         specifier: ^5.11.3
         version: 5.11.3
+      nodemailer:
+        specifier: ^6.9.16
+        version: 6.10.1
       razorpay:
         specifier: ^2.9.8
         version: 2.9.8(debug@4.4.3)
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
+    devDependencies:
+      '@types/node':
+        specifier: ^26.2.0
+        version: 26.2.0
+      '@types/nodemailer':
+        specifier: ^6.4.17
+        version: 6.4.24
+
+  apps/node-agent:
+    dependencies:
+      '@fastify/cors':
+        specifier: ^10.0.0
+        version: 10.1.0
+      '@mystic/bootstrap':
+        specifier: workspace:*
+        version: link:../../packages/bootstrap
+      '@mystic/config':
+        specifier: workspace:*
+        version: link:../../packages/config
+      '@mystic/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@mystic/logger':
+        specifier: workspace:*
+        version: link:../../packages/logger
+      fastify:
+        specifier: ^5.11.3
+        version: 5.11.3
       zod:
         specifier: ^4.4.3
         version: 4.4.3
@@ -731,6 +765,9 @@ packages:
 
   '@types/node@26.2.0':
     resolution: {integrity: sha512-5IviulTZeRNp2vAJ514cc/HUlY5nZ9fCbq9DMyC52BrhFZACo3nI0R7qBxhQmo/d27NFe96ur/b7Wwxklda+kg==}
+
+  '@types/nodemailer@6.4.24':
+    resolution: {integrity: sha512-Ww4u0rT9wQNXh4JiQaIwx3QWdcOFXzOjQA2zc+jtFYNmQiT4mIUqcDin51bDFdkzKubFnQCZNK7FIHlPKQ/q9w==}
 
   '@types/pg@8.21.0':
     resolution: {integrity: sha512-AYdtudzabjLZgVgRZmAnU8bAnVUXzuJX2IYHeSIiIHm68olD+LgQYCGWdtcNYnP0uq9c4S4NibVG3Ni7VbKW7Q==}
@@ -1411,6 +1448,10 @@ packages:
     resolution: {integrity: sha512-LA4ZjwlnUblHVgq0oBF3Jl/6h/Nvs5fzBLwdEF4nuxnFdsfajde4WfxtJr3CaiH+F6ewcIB/q4jQ4UzPyid+CQ==}
     hasBin: true
 
+  nodemailer@6.10.1:
+    resolution: {integrity: sha512-Z+iLaBGVaSjbIzQ4pX6XV41HrooLsQ10ZWPUehGmuantvzWoDVBnmsdUcOIDM1t+yPor5pDhVlDESgOMEGxhHA==}
+    engines: {node: '>=6.0.0'}
+
   obliterator@2.0.5:
     resolution: {integrity: sha512-42CPE9AhahZRsMNslczq0ctAEtqk8Eka26QofnqC346BZdHDySk3LWka23LI7ULIw11NmltpiLagIq8gBozxTw==}
 
@@ -2008,6 +2049,10 @@ snapshots:
   '@types/node@26.2.0':
     dependencies:
       undici-types: 8.3.0
+
+  '@types/nodemailer@6.4.24':
+    dependencies:
+      '@types/node': 26.2.0
 
   '@types/pg@8.21.0':
     dependencies:
@@ -2662,6 +2707,8 @@ snapshots:
   node-addon-api@8.9.1: {}
 
   node-gyp-build@4.8.4: {}
+
+  nodemailer@6.10.1: {}
 
   obliterator@2.0.5: {}
 

@@ -27,11 +27,18 @@ import { registerIPv4AdminRoutes } from "./routes/ipv4-admin.js";
 import { registerEmailAdminRoutes } from "./routes/email-admin.js";
 import { registerCmsRoutes } from "./routes/cms.js";
 import { registerNotificationRoutes } from "./routes/notifications.js";
+import { registerNodeAdminRoutes } from "./routes/node-admin.js";
+import { registerCustomerServerRoutes } from "./routes/servers.js";
+import { registerServerAdminRoutes } from "./routes/server-admin.js";
+import { startNodeMonitorWorker } from "./services/node/node-monitor.service.js";
 
 const config = loadConfig();
 
 export async function buildApp() {
   const app = await createServer();
+
+  // Start background stale node monitor worker
+  startNodeMonitorWorker();
 
   // Custom JSON Content Parser to preserve raw body for Webhook HMAC Signature verification
   app.addContentTypeParser(
@@ -128,6 +135,9 @@ export async function buildApp() {
   await registerEmailAdminRoutes(app);
   await registerCmsRoutes(app);
   await registerNotificationRoutes(app);
+  await registerNodeAdminRoutes(app);
+  await registerCustomerServerRoutes(app);
+  await registerServerAdminRoutes(app);
 
   return app;
 }
