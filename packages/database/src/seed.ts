@@ -322,7 +322,27 @@ async function seed() {
         const filePath = path.join(migrationsDir, file);
         console.log(`   Applying migration SQL '${file}'...`);
         const sqlContent = fs.readFileSync(filePath, "utf8");
-        await pool.query(sqlContent);
+        const statements = sqlContent
+          .split("--> statement-breakpoint")
+          .map((s) => s.trim())
+          .filter((s) => s.length > 0);
+
+        for (const stmt of statements) {
+          try {
+            await pool.query(stmt);
+          } catch (err: any) {
+            if (
+              err.message &&
+              (err.message.includes("already exists") ||
+                err.code === "42710" ||
+                err.code === "42P07" ||
+                err.code === "42701")
+            ) {
+              continue;
+            }
+            throw err;
+          }
+        }
       }
       console.log("✓ All SQL migration tables created successfully!");
     } else {
