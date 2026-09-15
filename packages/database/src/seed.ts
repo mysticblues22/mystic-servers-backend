@@ -294,9 +294,9 @@ export const catalogPlans = [
   },
 ];
 
+import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { migrate } from "drizzle-orm/node-postgres/migrator";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -305,12 +305,31 @@ async function seed() {
   console.log("🌱 Starting idempotent production product and plan catalog seed...");
 
   try {
-    console.log("🔄 Automatically deploying database migrations...");
-    const migrationsFolder = path.resolve(__dirname, "migrations");
-    await migrate(db, { migrationsFolder });
-    console.log("✓ Database tables verified and migrated successfully!");
+    const tableCheck = await pool.query(
+      "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'products');"
+    );
+    const productsExist = tableCheck.rows[0]?.exists;
+
+    if (!productsExist) {
+      console.log("🔄 Executing SQL migration files to create database schema...");
+      const migrationsDir = path.resolve(__dirname, "migrations");
+      const files = fs
+        .readdirSync(migrationsDir)
+        .filter((f) => f.endsWith(".sql"))
+        .sort();
+
+      for (const file of files) {
+        const filePath = path.join(migrationsDir, file);
+        console.log(`   Applying migration SQL '${file}'...`);
+        const sqlContent = fs.readFileSync(filePath, "utf8");
+        await pool.query(sqlContent);
+      }
+      console.log("✓ All SQL migration tables created successfully!");
+    } else {
+      console.log("✓ Database tables verified and already exist.");
+    }
   } catch (migErr: any) {
-    console.warn("⚠️ Migration auto-deploy warning (continuing seed):", migErr?.message || migErr);
+    console.warn("⚠️ Migration execution warning:", migErr?.message || migErr);
   }
 
   try {
