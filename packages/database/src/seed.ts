@@ -294,8 +294,24 @@ export const catalogPlans = [
   },
 ];
 
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { migrate } from "drizzle-orm/node-postgres/migrator";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 async function seed() {
   console.log("🌱 Starting idempotent production product and plan catalog seed...");
+
+  try {
+    console.log("🔄 Automatically deploying database migrations...");
+    const migrationsFolder = path.resolve(__dirname, "migrations");
+    await migrate(db, { migrationsFolder });
+    console.log("✓ Database tables verified and migrated successfully!");
+  } catch (migErr: any) {
+    console.warn("⚠️ Migration auto-deploy warning (continuing seed):", migErr?.message || migErr);
+  }
 
   try {
     const productMap: Record<string, string> = {};
