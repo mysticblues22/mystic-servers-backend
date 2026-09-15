@@ -12,15 +12,13 @@ export interface BootstrapOptions {
 }
 
 export function bootstrap(options: BootstrapOptions = {}): void {
-  // Always prioritize local .env in current working directory if present
-  const localEnvPath = path.resolve(process.cwd(), ".env");
-  if (fs.existsSync(localEnvPath)) {
-    dotenv.config({ path: localEnvPath });
-  }
-
   const candidates = [
     process.env.ENV_FILE,
     options.envFile,
+    path.resolve(process.cwd(), ".env"),
+    path.resolve(process.cwd(), "../.env"),
+    path.resolve(process.cwd(), "../../.env"),
+    path.resolve(process.cwd(), "../apps/auth-service/.env"),
     "../../../infrastructure/env/backend.env",
     "../../infrastructure/env/backend.env",
     "../infrastructure/env/backend.env",

@@ -4,11 +4,20 @@ import path from "node:path";
 import { envSchema } from "./schema.js";
 
 export function loadConfig() {
-  const localEnvPath = path.resolve(process.cwd(), ".env");
-  if (fs.existsSync(localEnvPath)) {
-    dotenv.config({ path: localEnvPath });
-  } else {
-    dotenv.config();
+  const candidates = [
+    process.env.ENV_FILE,
+    path.resolve(process.cwd(), ".env"),
+    path.resolve(process.cwd(), "../.env"),
+    path.resolve(process.cwd(), "../../.env"),
+    path.resolve(process.cwd(), "../apps/auth-service/.env"),
+    path.resolve(process.cwd(), "apps/auth-service/.env"),
+  ].filter((p): p is string => Boolean(p));
+
+  for (const envPath of candidates) {
+    if (fs.existsSync(envPath)) {
+      dotenv.config({ path: envPath });
+      break;
+    }
   }
 
   const parsed = envSchema.safeParse(process.env);
