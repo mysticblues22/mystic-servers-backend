@@ -12,6 +12,12 @@ export interface BootstrapOptions {
 }
 
 export function bootstrap(options: BootstrapOptions = {}): void {
+  // Always prioritize local .env in current working directory if present
+  const localEnvPath = path.resolve(process.cwd(), ".env");
+  if (fs.existsSync(localEnvPath)) {
+    dotenv.config({ path: localEnvPath });
+  }
+
   const candidates = [
     process.env.ENV_FILE,
     options.envFile,
@@ -19,17 +25,15 @@ export function bootstrap(options: BootstrapOptions = {}): void {
     "../../infrastructure/env/backend.env",
     "../infrastructure/env/backend.env",
     "/srv/git/infrastructure/env/backend.env",
-    ".env",
   ].filter((p): p is string => Boolean(p));
 
   for (const envPath of candidates) {
     const resolvedPath = path.resolve(envPath);
     if (fs.existsSync(resolvedPath)) {
       dotenv.config({ path: resolvedPath });
-      return;
+      break;
     }
   }
 
-  // Fallback to default process.env
   dotenv.config();
 }
